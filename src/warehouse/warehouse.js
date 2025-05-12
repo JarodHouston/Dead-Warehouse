@@ -1,12 +1,18 @@
 // floor.js
 import * as THREE from "three";
-import { wallMatrix, createWallTile } from "./warehouse-wall";
+import { loadWallMatrix, createWallTile } from "./warehouse-wall";
 
-const floorSize = 300;
-const tileSize = 8;
+const tileSize = 10;
 const wallHeight = 15;
 
-export function warehouse() {
+async function getWallMatrix() {
+  return await loadWallMatrix();
+}
+
+const wallMatrix = await getWallMatrix();
+console.log(wallMatrix);
+
+export function warehouse(floorSize) {
   const warehouse = new THREE.Group();
 
   const floorGeometry = new THREE.PlaneGeometry(floorSize, floorSize);
@@ -17,7 +23,7 @@ export function warehouse() {
 
   const floor = new THREE.Mesh(floorGeometry, floorMaterial);
   floor.rotation.x = -Math.PI / 2;
-  floor.position.y = 0.1; // so it's above the ground
+  floor.position.y = 0; // doesn't need to be above ground if there's the hole in the terrain
 
   warehouse.add(floor);
 
