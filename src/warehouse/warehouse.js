@@ -2,8 +2,8 @@
 import * as THREE from "three";
 import { loadWallMatrix, createWallTile } from "./warehouse-wall";
 
-const tileSize = 10;
-const wallHeight = 15;
+const tileSize = 8;
+const wallHeight = 20;
 
 async function getWallMatrix() {
   return await loadWallMatrix();
