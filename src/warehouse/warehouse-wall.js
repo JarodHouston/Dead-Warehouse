@@ -26,7 +26,7 @@ export async function loadWallMatrix() {
   }
 }
 
-export function createWallTile(size = 10, height = 15) {
+export function createWallTile(size = 2, height = 5) {
   const geometry = new THREE.BoxGeometry(size, height, size);
   const material = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
   const wall = new THREE.Mesh(geometry, material);
