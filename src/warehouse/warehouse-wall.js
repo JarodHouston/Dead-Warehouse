@@ -12,13 +12,26 @@ import * as THREE from "three";
 //   [1, 1, 1, 1, 1, 1, 1, 1],
 // ];
 
+// export async function loadWallMatrix() {
+//   try {
+//     const response = await fetch("/wallMatrix.json");
+//     if (!response.ok) {
+//       throw new Error(`HTTP error! status: ${response.status}`);
+//     }
+//     const matrix = await response.json();
+//     return matrix;
+//   } catch (err) {
+//     console.error("Error fetching wall matrix:", err);
+//     return [];
+//   }
+// }
+
 export async function loadWallMatrix() {
   try {
-    const response = await fetch("/wallMatrix.json");
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const matrix = await response.json();
+    const response = await fetch("/wallMatrix.csv");
+    const text = await response.text();
+    const rows = text.trim().split("\n");
+    const matrix = rows.map((row) => row.split(",").map(Number));
     return matrix;
   } catch (err) {
     console.error("Error fetching wall matrix:", err);
