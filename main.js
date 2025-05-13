@@ -15,7 +15,7 @@ const WAREHOUSE_SIZE  = 100;
 
 // Player
 const PLAYER_HEIGHT   = 1.6;              // metres (eye position)
-const PLAYER_RADIUS   = 0.01;             // capsule radius
+const PLAYER_RADIUS   = 0.1;             // capsule radius
 const WALK_SPEED      = 5;                // m·s‑1
 const JUMP_SPEED      = 10;               // m·s‑1 impulse
 const GRAVITY         = 30;               // m·s‑2
@@ -29,15 +29,15 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.outputEncoding = THREE.sRGBEncoding;
-renderer.shadowMap.enabled = true;
+renderer.shadowMap.enabled = false;
 document.body.appendChild(renderer.domElement);
 
 /* ─────────────────────────────── CAMERA & CONTROLS ───────────────────────────── */
 let camera, controls;
 
 // Spawn **outside** the warehouse hole so we stand on solid ground
-const START_X = -WAREHOUSE_SIZE / 2 - 5;
-const START_Z = -WAREHOUSE_SIZE / 2 - 5;
+const START_X = 0;
+const START_Z = WAREHOUSE_SIZE / 2 - 5;
 const SPAWN_POS = new THREE.Vector3(START_X, PLAYER_HEIGHT, START_Z);
 
 if (DEV_MODE) {
