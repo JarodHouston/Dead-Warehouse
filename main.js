@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import Stats from "three/examples/jsm/libs/stats.module.js"; // FPS overlay (optional)
+import { GLTFLoader } from "three/examples/jsm/Addons.js";
 import { Octree } from "three/examples/jsm/math/Octree.js";
 import { OctreeHelper } from "three/examples/jsm/helpers/OctreeHelper.js";
 import { Capsule } from "three/examples/jsm/math/Capsule.js";

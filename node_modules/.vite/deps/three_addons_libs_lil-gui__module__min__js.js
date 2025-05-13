@@ -1,3 +1,5 @@
+import "./chunk-PZ5AY32C.js";
+
 // node_modules/three/examples/jsm/libs/lil-gui.module.min.js
 var t = class _t {
   constructor(i2, e2, s2, n2, l2 = "div") {
