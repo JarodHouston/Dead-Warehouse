@@ -1,38 +1,43 @@
 import * as THREE from "three";
+import Stats from "three/examples/jsm/libs/stats.module.js"; // FPS overlay (optional)
+import { Octree } from "three/examples/jsm/math/Octree.js";
+import { OctreeHelper } from "three/examples/jsm/helpers/OctreeHelper.js";
+import { Capsule } from "three/examples/jsm/math/Capsule.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
 import { warehouse } from "./src/warehouse/warehouse.js";
 
-const DEV_MODE = false;
+/* ─────────────────────────────── GLOBAL CONSTANTS ────────────────────────────── */
+const DEV_MODE = false; // true = free‑fly Orbit camera
+const TERRAIN_SIZE = 500;
+const WAREHOUSE_SIZE = 100;
 
-const terrainSize = 500;
-const warehouseSize = 100;
+// Player
+const PLAYER_HEIGHT = 1.6; // metres (eye position)
+const PLAYER_RADIUS = 0.1; // capsule radius
+const WALK_SPEED = 5; // m·s‑1
+const JUMP_SPEED = 10; // m·s‑1 impulse
+const GRAVITY = 30; // m·s‑2
+const SUBSTEPS = 5; // physics micro‑steps per frame
 
+/* ─────────────────────────────── SCENE & RENDERER ────────────────────────────── */
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87ceeb); // 0x0b0035
+scene.background = new THREE.Color(0x87ceeb); // sky‑blue
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 
-let camera = null;
-let controls = null;
+/* ─────────────────────────────── CAMERA & CONTROLS ───────────────────────────── */
+let camera, controls;
 
-camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  500
-);
-camera.position.set(0, 1.6, 55); // Eye height: ~1.6m
-
-controls = new PointerLockControls(camera, document.body);
-scene.add(controls.object);
-const velocity = new THREE.Vector3();
-const direction = new THREE.Vector3();
-const speed = 5.0; // meters per second
-
-const keys = { w: false, a: false, s: false, d: false };
+// Spawn **outside** the warehouse hole so we stand on solid ground
+const START_X = 0;
+const START_Z = WAREHOUSE_SIZE / 2 + 5;
+const SPAWN_POS = new THREE.Vector3(START_X, PLAYER_HEIGHT, START_Z);
 
 if (DEV_MODE) {
   camera = new THREE.PerspectiveCamera(
@@ -42,88 +47,195 @@ if (DEV_MODE) {
     1000
   );
   camera.position.set(0, 300, 0);
-  camera.lookAt(0, 0, 0);
-
   controls = new OrbitControls(camera, renderer.domElement);
   controls.target.set(0, 0, 0);
-  controls.enabled = true;
-  controls.minDistance = 10;
-  controls.maxDistance = 500;
-  controls.maxPolarAngle = Math.PI / 2.05; // almost flat horizontal view
+  controls.enableDamping = true;
+  controls.maxPolarAngle = Math.PI / 2.05;
 } else {
-  document.addEventListener("keydown", (event) => {
-    keys[event.key.toLowerCase()] = true;
-  });
+  camera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    500
+  );
+  camera.position.copy(SPAWN_POS);
 
-  document.addEventListener("keyup", (event) => {
-    keys[event.key.toLowerCase()] = false;
-  });
-  document.addEventListener("click", () => {
-    controls.lock();
+  controls = new PointerLockControls(camera, document.body);
+  scene.add(controls.getObject());
+  window.addEventListener("click", () => controls.lock());
+
+  // Graceful exit with Esc key
+  document.addEventListener("pointerlockchange", () => {
+    if (!document.pointerLockElement) {
+      controls.unlock();
+    }
   });
 }
 
-// for now, create ambient lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // soft white light
-scene.add(ambientLight);
+/* ─────────────────────────────────── LIGHTS ──────────────────────────────────── */
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+const sun = new THREE.DirectionalLight(0xffffff, 1.0);
+sun.position.set(100, 200, 100);
+sun.castShadow = true;
+scene.add(sun);
 
-// load basic terrain
-// const terrainGeometry = new THREE.PlaneGeometry(1000, 1000, 100, 100);
-const outer = new THREE.Shape();
-outer.moveTo(-terrainSize / 2, -terrainSize / 2);
-outer.lineTo(terrainSize / 2, -terrainSize / 2);
-outer.lineTo(terrainSize / 2, terrainSize / 2);
-outer.lineTo(-terrainSize / 2, terrainSize / 2);
-outer.lineTo(-terrainSize / 2, -terrainSize / 2);
-
-// make a hole
-const hole = new THREE.Path();
-hole.moveTo(-warehouseSize / 2, -warehouseSize / 2);
-hole.lineTo(warehouseSize / 2, -warehouseSize / 2);
-hole.lineTo(warehouseSize / 2, warehouseSize / 2);
-hole.lineTo(-warehouseSize / 2, warehouseSize / 2);
-hole.lineTo(-warehouseSize / 2, -warehouseSize / 2);
-outer.holes.push(hole);
-
-const terrainGeometry = new THREE.ShapeGeometry(outer);
-const terrainMaterial = new THREE.MeshBasicMaterial({
-  color: 0x228b22, // forest green
-  wireframe: false,
-  flatShading: true,
-});
-// material.depthWrite = false;
-
-const terrain = new THREE.Mesh(terrainGeometry, terrainMaterial);
-terrain.rotation.x = -Math.PI / 2; // Rotate to make it flat
+/* ─────────────────────────────── TERRAIN PLANE ──────────────────────────────── */
+// Simple solid ground so you never fall through a hole
+const terrain = new THREE.Mesh(
+  new THREE.PlaneGeometry(TERRAIN_SIZE, TERRAIN_SIZE),
+  new THREE.MeshStandardMaterial({ color: 0x228b22, flatShading: true })
+);
+terrain.rotation.x = -Math.PI / 2;
+terrain.receiveShadow = true;
+terrain.position.y = -PLAYER_RADIUS; // perfectly grounded spawn
 scene.add(terrain);
 
-const warehouseObject = warehouse(warehouseSize);
-scene.add(warehouseObject);
+/* ─────────────────────────────── WAREHOUSE PROP ─────────────────────────────── */
+let warehouseObject;
+try {
+  warehouseObject = warehouse(WAREHOUSE_SIZE);
+  scene.add(warehouseObject);
+} catch (e) {
+  console.warn("warehouse() prefab missing – using placeholder cube", e);
+  warehouseObject = new THREE.Mesh(
+    new THREE.BoxGeometry(WAREHOUSE_SIZE, 20, WAREHOUSE_SIZE),
+    new THREE.MeshStandardMaterial({ color: 0x999999 })
+  );
+  warehouseObject.position.y = 10;
+  scene.add(warehouseObject);
+}
 
+/* ───────────────────────────────── OCTREE SETUP ─────────────────────────────── */
+const worldOctree = new Octree();
+worldOctree.fromGraphNode(terrain);
+worldOctree.fromGraphNode(warehouseObject);
+
+if (DEV_MODE) {
+  const octreeHelper = new OctreeHelper(worldOctree);
+  scene.add(octreeHelper);
+}
+
+/* ─────────────────────────────── PLAYER COLLIDER ────────────────────────────── */
+const playerCollider = new Capsule(
+  new THREE.Vector3(SPAWN_POS.x, PLAYER_RADIUS, SPAWN_POS.z),
+  new THREE.Vector3(SPAWN_POS.x, PLAYER_HEIGHT, SPAWN_POS.z),
+  PLAYER_RADIUS
+);
+
+/* ───────────────────────────────── INPUT ────────────────────────────────────── */
+const keys = { w: false, a: false, s: false, d: false, " ": false };
+if (!DEV_MODE) {
+  window.addEventListener("keydown", (e) => {
+    if (keys.hasOwnProperty(e.key.toLowerCase()))
+      keys[e.key.toLowerCase()] = true;
+  });
+  window.addEventListener("keyup", (e) => {
+    if (keys.hasOwnProperty(e.key.toLowerCase()))
+      keys[e.key.toLowerCase()] = false;
+  });
+}
+
+/* ─────────────────────────────── PHYSICS HELPERS ───────────────────────────── */
+const velocity = new THREE.Vector3();
+const direction = new THREE.Vector3();
+const tmpVec = new THREE.Vector3();
+const horiz = new THREE.Vector3();
+const side = new THREE.Vector3();
+let onFloor = false;
+
+function handleInput(dt) {
+  // 1.  Build horizontal input vector from WASD
+  horiz.set(
+    Number(keys.d) - Number(keys.a), // +1 = right, –1 = left
+    0,
+    Number(keys.s) - Number(keys.w) // +1 = back,  –1 = forward
+  );
+
+  if (horiz.lengthSq() > 0) {
+    // 2.  Camera-forward on the ground plane
+    controls.getDirection(tmpVec); // world forward
+    tmpVec.y = 0;
+    tmpVec.normalize();
+
+    // 3.  Camera-right (correct cross-product order!)
+    side.crossVectors(tmpVec, camera.up).normalize();
+
+    // 4.  Combine: forward/back + left/right
+    //     w / s  → horiz.z   (-1 / +1)
+    //     a / d  → horiz.x   (-1 / +1)
+    const moveDir = tmpVec
+      .clone()
+      .multiplyScalar(-horiz.z)
+      .add(side.clone().multiplyScalar(horiz.x));
+
+    velocity.x = moveDir.x * WALK_SPEED; // keep vertical velocity.y untouched
+    velocity.z = moveDir.z * WALK_SPEED;
+  } else {
+    velocity.x = velocity.z = 0; // stop horizontal motion only
+  }
+
+  // 5.  Jump
+  if (onFloor && keys[" "]) velocity.y = JUMP_SPEED;
+}
+
+function playerPhysics(dt) {
+  // Apply gravity
+  if (!onFloor) velocity.y -= GRAVITY * dt;
+
+  // Move the capsule
+  playerCollider.translate(velocity.clone().multiplyScalar(dt));
+
+  // Resolve collisions
+  const result = worldOctree.capsuleIntersect(playerCollider);
+  onFloor = false;
+  if (result) {
+    onFloor = result.normal.y > 0.5;
+    playerCollider.translate(result.normal.multiplyScalar(result.depth));
+    velocity.addScaledVector(result.normal, -result.normal.dot(velocity));
+  }
+
+  // Respawn if fallen out of the world
+  if (playerCollider.end.y < -10) {
+    playerCollider.start.set(SPAWN_POS.x, PLAYER_RADIUS, SPAWN_POS.z);
+    playerCollider.end.set(SPAWN_POS.x, PLAYER_HEIGHT, SPAWN_POS.z);
+    controls.getObject().position.copy(SPAWN_POS);
+    velocity.set(0, 0, 0);
+  }
+}
+
+function syncCamera() {
+  controls.getObject().position.copy(playerCollider.end);
+}
+
+/* ─────────────────────────── RESIZE HANDLING ──────────────────────────────── */
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+/* ─────────────────────────── MAIN ANIMATION LOOP ──────────────────────────── */
 const clock = new THREE.Clock();
+const stats = new Stats();
+document.body.appendChild(stats.dom);
 
 function animate() {
   requestAnimationFrame(animate);
-  controls.update(); // only needed if controls.enableDamping = true
+  const dt = clock.getDelta();
 
-  if (!DEV_MODE) {
-    const delta = clock.getDelta();
-
-    direction.z = Number(keys.w) - Number(keys.s);
-    direction.x = Number(keys.d) - Number(keys.a);
-    direction.normalize(); // so diagonal isn't faster
-
-    if (controls.isLocked) {
-      velocity.x = direction.x * speed * delta;
-      velocity.z = direction.z * speed * delta;
-
-      controls.moveRight(velocity.x);
-      controls.moveForward(velocity.z);
-
-      // Lock vertical position (y)
-      camera.position.y = 1.6;
+  if (DEV_MODE) {
+    controls.update();
+  } else {
+    const step = Math.min(0.05, dt) / SUBSTEPS;
+    for (let i = 0; i < SUBSTEPS; i++) {
+      handleInput(step);
+      playerPhysics(step);
     }
+    syncCamera();
   }
+
   renderer.render(scene, camera);
+  stats.update();
 }
+
 animate();
