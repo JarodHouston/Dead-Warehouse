@@ -2,14 +2,14 @@
 import * as THREE from "three";
 import { loadWallMatrix, createWallTile } from "./warehouse-wall";
 
-const tileSize = 1;
+export const tileSize = 1;
 const wallHeight = 3;
 
 async function getWallMatrix() {
   return await loadWallMatrix();
 }
 
-const wallMatrix = await getWallMatrix();
+export const wallMatrix = await getWallMatrix();
 console.log(wallMatrix);
 
 export function warehouse(floorSize) {
@@ -32,9 +32,9 @@ export function warehouse(floorSize) {
       if (wallMatrix[row][col] === 1) {
         const wall = createWallTile(tileSize, wallHeight);
         wall.position.set(
-          col * tileSize - (wallMatrix[0].length * tileSize) / 2 + tileSize / 2,
+          col * tileSize,
           wallHeight / 2,
-          row * tileSize - (wallMatrix.length * tileSize) / 2 + tileSize / 2
+          row * tileSize
         );
         warehouse.add(wall);
       }

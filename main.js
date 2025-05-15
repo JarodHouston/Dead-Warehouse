@@ -2,6 +2,13 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
 import { warehouse } from "./src/warehouse/warehouse.js";
+import { computeZombieNextStep } from "./src/zombie/pathfinding.js";
+import { tileSize } from "./src/warehouse/warehouse.js";
+import { wallMatrix } from "./src/warehouse/warehouse.js";
+import { createZombie } from './src/zombie/model.js';
+
+
+
 
 const DEV_MODE = false;
 
@@ -24,7 +31,7 @@ camera = new THREE.PerspectiveCamera(
   0.1,
   500
 );
-camera.position.set(0, 1.6, 55); // Eye height: ~1.6m
+camera.position.set(20, 1.6, 20); // Eye height: ~1.6m
 
 controls = new PointerLockControls(camera, document.body);
 scene.add(controls.object);
@@ -101,14 +108,42 @@ const warehouseObject = warehouse(warehouseSize);
 scene.add(warehouseObject);
 
 const clock = new THREE.Clock();
-
+let zombie = createZombie(0x00aa00);
+scene.add(zombie);
+let zombieTile = {x: 10, y: 10};
+//zombie.position.set(10, 0, 10)
+console.log(camera.position/tileSize)
+let interval = 0.2;
+let lastUpdate = 0;
 function animate() {
   requestAnimationFrame(animate);
   controls.update(); // only needed if controls.enableDamping = true
+  
 
   if (!DEV_MODE) {
     const delta = clock.getDelta();
+    const time = clock.getElapsedTime();
+    const playerTile = {
+      x: Math.floor(camera.position.x / tileSize),
+      y: Math.floor(camera.position.z / tileSize)
+    };
+    const next = computeZombieNextStep({
+      wallMatrix,
+      from: zombieTile,
+      to: playerTile
+    });
+    if (time - lastUpdate > interval && next) {
+      lastUpdate = time;
+  
+      zombieTile = next;
+      console.log(zombie)
+      //console.log(zombieTile);
+      zombie.position.set(zombieTile.x, 0,zombieTile.y);
+    }
+    if (next && Math.floor(time)%2 == 0) {
 
+
+    }
     direction.z = Number(keys.w) - Number(keys.s);
     direction.x = Number(keys.d) - Number(keys.a);
     direction.normalize(); // so diagonal isn't faster
