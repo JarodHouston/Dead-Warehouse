@@ -6,6 +6,10 @@ import { Capsule } from "three/examples/jsm/math/Capsule.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
 import { warehouse } from "./src/warehouse/warehouse.js";
+import { computeZombieNextStep } from "./src/zombie/pathfinding.js";
+import { tileSize } from "./src/warehouse/warehouse.js";
+import { wallMatrix } from "./src/warehouse/warehouse.js";
+import { createZombie } from "./src/zombie/model.js";
 
 /* ─────────────────────────────── GLOBAL CONSTANTS ────────────────────────────── */
 const DEV_MODE = false; // true = free‑fly Orbit camera
@@ -22,7 +26,7 @@ const SUBSTEPS = 5; // physics micro‑steps per frame
 
 /* ─────────────────────────────── SCENE & RENDERER ────────────────────────────── */
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87ceeb); // sky‑blue
+scene.background = new THREE.Color(0x110124); // sky‑blue
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
@@ -35,7 +39,7 @@ document.body.appendChild(renderer.domElement);
 let camera, controls;
 
 // Spawn **outside** the warehouse hole so we stand on solid ground
-const START_X = 0;
+const START_X = 100;
 const START_Z = WAREHOUSE_SIZE / 2 + 5;
 const SPAWN_POS = new THREE.Vector3(START_X, PLAYER_HEIGHT, START_Z);
 
@@ -110,10 +114,10 @@ const worldOctree = new Octree();
 worldOctree.fromGraphNode(terrain);
 worldOctree.fromGraphNode(warehouseObject);
 
-if (DEV_MODE) {
-  const octreeHelper = new OctreeHelper(worldOctree);
-  scene.add(octreeHelper);
-}
+// if (DEV_MODE) {
+//   const octreeHelper = new OctreeHelper(worldOctree);
+//   scene.add(octreeHelper);
+// }
 
 /* ─────────────────────────────── PLAYER COLLIDER ────────────────────────────── */
 const playerCollider = new Capsule(
@@ -216,6 +220,15 @@ window.addEventListener("resize", () => {
 
 /* ─────────────────────────── MAIN ANIMATION LOOP ──────────────────────────── */
 const clock = new THREE.Clock();
+
+let zombie = createZombie(0x00aa00);
+scene.add(zombie);
+let zombieTile = { x: 10, y: 10 };
+//zombie.position.set(10, 0, 10)
+console.log(camera.position / tileSize);
+let interval = 0.2;
+let lastUpdate = 0;
+
 const stats = new Stats();
 document.body.appendChild(stats.dom);
 
@@ -232,6 +245,26 @@ function animate() {
       playerPhysics(step);
     }
     syncCamera();
+
+    // Nemo's stuff
+    const time = clock.getElapsedTime();
+    const playerTile = {
+      x: Math.floor(camera.position.x / tileSize),
+      y: Math.floor(camera.position.z / tileSize),
+    };
+    const next = computeZombieNextStep({
+      wallMatrix,
+      from: zombieTile,
+      to: playerTile,
+    });
+    if (time - lastUpdate > interval && next) {
+      lastUpdate = time;
+
+      zombieTile = next;
+      console.log(zombie);
+      //console.log(zombieTile);
+      zombie.position.set(zombieTile.x, 0, zombieTile.y);
+    }
   }
 
   renderer.render(scene, camera);

@@ -11,7 +11,7 @@ import * as THREE from "three";
 //   [1, 0, 0, 0, 0, 0, 0, 1],
 //   [1, 1, 1, 1, 1, 1, 1, 1],
 // ];
-
+ 
 // export async function loadWallMatrix() {
 //   try {
 //     const response = await fetch("/wallMatrix.json");
