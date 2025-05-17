@@ -39,8 +39,8 @@ document.body.appendChild(renderer.domElement);
 let camera, controls;
 
 // Spawn **outside** the warehouse hole so we stand on solid ground
-const START_X = 100;
-const START_Z = WAREHOUSE_SIZE / 2 + 5;
+const START_X = WAREHOUSE_SIZE / 2 - 1.5;
+const START_Z = -5;
 const SPAWN_POS = new THREE.Vector3(START_X, PLAYER_HEIGHT, START_Z);
 
 if (DEV_MODE) {
@@ -63,6 +63,7 @@ if (DEV_MODE) {
     500
   );
   camera.position.copy(SPAWN_POS);
+  camera.rotation.y = Math.PI;
 
   controls = new PointerLockControls(camera, document.body);
   scene.add(controls.getObject());
