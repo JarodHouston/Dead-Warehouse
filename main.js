@@ -7,7 +7,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
 import { warehouse } from "./src/warehouse/warehouse.js";
 import { computeZombieNextStep } from "./src/zombie/pathfinding.js";
-import { tileSize } from "./src/warehouse/warehouse.js";
+import { TILE_SIZE } from "./src/warehouse/warehouse.js";
 import { wallMatrix } from "./src/warehouse/warehouse.js";
 import { createZombie } from "./src/zombie/model.js";
 
@@ -66,7 +66,7 @@ if (DEV_MODE) {
   camera.rotation.y = Math.PI;
 
   controls = new PointerLockControls(camera, document.body);
-  scene.add(controls.getObject());
+  scene.add(controls.object);
   window.addEventListener("click", () => controls.lock());
 
   // Graceful exit with Esc key
@@ -226,7 +226,7 @@ let zombie = createZombie(0x00aa00);
 scene.add(zombie);
 let zombieTile = { x: 10, y: 10 };
 //zombie.position.set(10, 0, 10)
-console.log(camera.position / tileSize);
+console.log(camera.position / TILE_SIZE);
 let interval = 0.2;
 let lastUpdate = 0;
 
@@ -250,8 +250,8 @@ function animate() {
     // Nemo's stuff
     const time = clock.getElapsedTime();
     const playerTile = {
-      x: Math.floor(camera.position.x / tileSize),
-      y: Math.floor(camera.position.z / tileSize),
+      x: Math.floor(camera.position.x / TILE_SIZE),
+      y: Math.floor(camera.position.z / TILE_SIZE),
     };
     const next = computeZombieNextStep({
       wallMatrix,

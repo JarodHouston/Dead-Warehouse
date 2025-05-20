@@ -1,30 +1,30 @@
 import * as THREE from "three";
 
-// Matrix layout: 1 = wall, 0 = empty
-// export const wallMatrix = [
-//   [1, 1, 1, 1, 1, 1, 1, 1],
-//   [1, 0, 0, 0, 0, 0, 0, 1],
-//   [1, 0, 1, 1, 1, 1, 0, 1],
-//   [1, 0, 1, 0, 0, 1, 0, 1],
-//   [1, 0, 1, 0, 0, 1, 0, 1],
-//   [1, 0, 1, 1, 1, 1, 0, 1],
-//   [1, 0, 0, 0, 0, 0, 0, 1],
-//   [1, 1, 1, 1, 1, 1, 1, 1],
-// ];
- 
-// export async function loadWallMatrix() {
-//   try {
-//     const response = await fetch("/wallMatrix.json");
-//     if (!response.ok) {
-//       throw new Error(`HTTP error! status: ${response.status}`);
-//     }
-//     const matrix = await response.json();
-//     return matrix;
-//   } catch (err) {
-//     console.error("Error fetching wall matrix:", err);
-//     return [];
-//   }
-// }
+const textureLoader = new THREE.TextureLoader();
+
+const colorMap = textureLoader.load(
+  "textures/brick/Bricks082A_2K-JPG_Color.jpg"
+);
+const normalMap = textureLoader.load(
+  "textures/brick/Bricks082A_2K-JPG_Color_NormalGL.jpg"
+);
+const roughnessMap = textureLoader.load(
+  "textures/brick/Bricks082A_2K-JPG_Color_Roughness.jpg"
+);
+const aoMap = textureLoader.load(
+  "textures/brick/Bricks082A_2K-JPG_Color_AmbientOcclusion.jpg"
+);
+
+if (!colorMap || !normalMap || !roughnessMap || !aoMap) {
+  console.log("Error loading textures in warehouse-wall.js");
+}
+
+// [colorMap, normalMap, roughnessMap, aoMap].forEach((map) => {
+//   map.wrapS = map.wrapT = THREE.RepeatWrapping;
+//   map.repeat.set(2, 2);
+//   map.rotation = Math.PI / 2;
+//   map.center.set(0.5, 0.5);
+// });
 
 export async function loadWallMatrix() {
   try {
@@ -41,8 +41,30 @@ export async function loadWallMatrix() {
 
 export function createWallTile(size = 2, height = 5) {
   const geometry = new THREE.BoxGeometry(size, height, size);
-  const material = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
+
+  geometry.attributes.uv2 = geometry.attributes.uv;
+
+  // // Random offset in UV space
+  // const offsetX = Math.random();
+  // const offsetY = Math.random();
+
+  // // Apply offset to each face's UVs
+  // const uvs = geometry.attributes.uv;
+  // for (let i = 0; i < uvs.count; i++) {
+  //   uvs.setXY(i, uvs.getX(i) + offsetX, uvs.getY(i) + offsetY);
+  // }
+
+  // const material = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
+  const material = new THREE.MeshStandardMaterial({
+    map: colorMap,
+    normalMap: normalMap,
+    roughnessMap: roughnessMap,
+    aoMap: aoMap,
+  });
+
   const wall = new THREE.Mesh(geometry, material);
   wall.castShadow = true;
+  wall.receiveShadow = true;
+
   return wall;
 }
