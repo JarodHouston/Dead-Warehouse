@@ -16,19 +16,21 @@ console.log(wallMatrix);
 export function warehouse(floorSize) {
   const warehouse = new THREE.Group();
 
-  /* ─────────────────────────────────── FLOOR ──────────────────────────────────── */
+  /* ─────────────────────────────────── FLOOR & ROOF ──────────────────────────────────── */
 
   const loader = new GLTFLoader();
   loader.load(
     "textures/concrete/Untitled4.glb",
     (gltf) => {
-      const floor = gltf.scene;
-
-      // Optional: Position it where your old floor was
-      floor.position.set(50, 0, 50); // match your previous settings
+      const floor = gltf.scene.clone(true);
+      floor.position.set(50, 0, 50);
       // floor.rotation.x = -Math.PI / 2;
 
+      const roof = gltf.scene.clone(true);
+      roof.position.set(50, WALL_HEIGHT, 50);
+
       warehouse.add(floor);
+      warehouse.add(roof);
     },
     undefined,
     (error) => {
