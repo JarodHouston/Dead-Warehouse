@@ -1,11 +1,12 @@
 import * as THREE from 'three';
+import {pixel_ratio} from './constants.js'
 
 export function createRenderer() {
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+  const renderer = new THREE.WebGLRenderer({ antialias: false });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, pixel_ratio));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.outputEncoding = THREE.sRGBEncoding;
-  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.enabled = false;
   document.body.appendChild(renderer.domElement);
   return renderer;
 }
