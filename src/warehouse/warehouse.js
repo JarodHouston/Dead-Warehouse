@@ -16,21 +16,21 @@ console.log(wallMatrix);
 export function warehouse(floorSize) {
   const warehouse = new THREE.Group();
 
-  /* ─────────────────────────────────── FLOOR & ROOF ──────────────────────────────────── */
+  /* ─────────────────────────────────── FLOOR ──────────────────────────────────── */
 
   const loader = new GLTFLoader();
   loader.load(
     "textures/concrete/Untitled4.glb",
     (gltf) => {
-      const floor = gltf.scene.clone(true);
+      const floor = gltf.scene;
       floor.position.set(50, 0, 50);
       // floor.rotation.x = -Math.PI / 2;
 
-      const roof = gltf.scene.clone(true);
-      roof.position.set(50, WALL_HEIGHT, 50);
+      // const roof = gltf.scene.clone(true);
+      // roof.position.set(50, WALL_HEIGHT, 50);
 
       warehouse.add(floor);
-      warehouse.add(roof);
+      // warehouse.add(roof);
     },
     undefined,
     (error) => {
@@ -78,6 +78,26 @@ export function warehouse(floorSize) {
   // roof.position.y = WALL_HEIGHT;
 
   // warehouse.add(roof);
+
+  const roofLoader = new GLTFLoader();
+  roofLoader.load(
+    "textures/concrete/Untitled4.glb",
+    (gltf) => {
+      const roof = gltf.scene;
+      roof.position.set(50, WALL_HEIGHT, 50);
+      // roof.rotation.x = -Math.PI / 2;
+
+      // const roof = gltf.scene.clone(true);
+      // roof.position.set(50, WALL_HEIGHT, 50);
+
+      warehouse.add(roof);
+      // warehouse.add(roof);
+    },
+    undefined,
+    (error) => {
+      console.error("Error loading roof model:", error);
+    }
+  );
 
   return warehouse;
 }
