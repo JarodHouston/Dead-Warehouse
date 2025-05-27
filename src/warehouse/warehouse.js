@@ -1,4 +1,3 @@
-// floor.js
 import * as THREE from "three";
 import { loadWallMatrix, createWallTile } from "./warehouse-wall";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -11,9 +10,11 @@ async function getWallMatrix() {
 }
 
 export const wallMatrix = await getWallMatrix();
-console.log(wallMatrix);
+// console.log(wallMatrix);
 
-export function warehouse(floorSize) {
+export const pointLights = [];
+
+export function warehouse(scene, floorSize) {
   const warehouse = new THREE.Group();
 
   /* ─────────────────────────────────── FLOOR ──────────────────────────────────── */
@@ -23,10 +24,24 @@ export function warehouse(floorSize) {
     "textures/concrete/Untitled4.glb",
     (gltf) => {
       const floor = gltf.scene;
+      //floor.scale.set(0.1, 0.1, 0.1);
+      floor.position.set(50, 0, 50);
 
-      // Optional: Position it where your old floor was
-      floor.position.set(50, 0, 50); // match your previous settings
-      // floor.rotation.x = -Math.PI / 2;
+      // floor.traverse((child) => {
+      //   if (child.isMesh) {
+      //     // Convert to light-reactive material if needed
+      //     if (!(child.material instanceof THREE.MeshStandardMaterial)) {
+      //       const oldMat = child.material;
+      //       child.material = new THREE.MeshStandardMaterial({
+      //         map: oldMat.map || null,
+      //         color: oldMat.color || new THREE.Color(0xffffff),
+      //         side: THREE.DoubleSide,
+      //       });
+      //     }
+      //     child.receiveShadow = true;
+      //     child.castShadow = false; // usually floor doesn't cast shadow
+      //   }
+      // });
 
       warehouse.add(floor);
     },
@@ -58,6 +73,29 @@ export function warehouse(floorSize) {
         const wall = createWallTile(TILE_SIZE, WALL_HEIGHT);
         wall.position.set(col * TILE_SIZE, WALL_HEIGHT / 2, row * TILE_SIZE);
         warehouse.add(wall);
+      } else if (wallMatrix[row][col] === 2) {
+        // Create a hanging point light
+        const light = new THREE.PointLight(0xffffff, 5, 40);
+        const lightX = col * TILE_SIZE + TILE_SIZE / 2;
+        const lightY = WALL_HEIGHT - 0.5; // slightly below ceiling
+        const lightZ = row * TILE_SIZE + TILE_SIZE / 2;
+        light.position.set(lightX, lightY, lightZ);
+
+        // light.castShadow = true;
+        // light.visible = false;
+        scene.add(light);
+
+        const helper = new THREE.PointLightHelper(light, 0.5);
+        scene.add(helper);
+
+        // Optional: Add visible bulb mesh
+        const bulbGeometry = new THREE.SphereGeometry(0.2, 16, 8);
+        const bulbMaterial = new THREE.MeshBasicMaterial({ color: 0xffffaa });
+        const bulb = new THREE.Mesh(bulbGeometry, bulbMaterial);
+        bulb.position.set(lightX, lightY, lightZ);
+
+        pointLights.push({ light, bulb });
+        warehouse.add(bulb);
       }
     }
   }
@@ -76,6 +114,26 @@ export function warehouse(floorSize) {
   // roof.position.y = WALL_HEIGHT;
 
   // warehouse.add(roof);
+
+  const roofLoader = new GLTFLoader();
+  roofLoader.load(
+    "textures/concrete/Untitled4.glb",
+    (gltf) => {
+      const roof = gltf.scene;
+      roof.position.set(50, WALL_HEIGHT, 50);
+      // roof.rotation.x = -Math.PI / 2;
+
+      // const roof = gltf.scene.clone(true);
+      // roof.position.set(50, WALL_HEIGHT, 50);
+
+      warehouse.add(roof);
+      // warehouse.add(roof);
+    },
+    undefined,
+    (error) => {
+      console.error("Error loading roof model:", error);
+    }
+  );
 
   return warehouse;
 }

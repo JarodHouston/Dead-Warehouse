@@ -1,22 +1,18 @@
-import * as THREE from 'three';
-import { Octree }        from 'three/examples/jsm/math/Octree.js';
-import { warehouse }     from '../warehouse/warehouse.js';
-import {
-  TERRAIN_SIZE,
-  WAREHOUSE_SIZE,
-  PLAYER_RADIUS
-} from './constants.js';
+import * as THREE from "three";
+import { Octree } from "three/examples/jsm/math/Octree.js";
+import { warehouse } from "../warehouse/warehouse.js";
+import { TERRAIN_SIZE, WAREHOUSE_SIZE, PLAYER_RADIUS } from "./constants.js";
 
 export function createScene() {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x110124);
 
   /* lights */
-  scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-  const sun = new THREE.DirectionalLight(0xffffff, 1);
-  sun.position.set(100, 200, 100);
-  sun.castShadow = true;
-  scene.add(sun);
+  // scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+  // const sun = new THREE.DirectionalLight(0xffffff, 1);
+  // sun.position.set(100, 200, 100);
+  // sun.castShadow = true;
+  // scene.add(sun);
 
   /* terrain */
   const terrain = new THREE.Mesh(
@@ -31,9 +27,9 @@ export function createScene() {
   /* warehouse (prefab or fallback) */
   let warehouseObj;
   try {
-    warehouseObj = warehouse(WAREHOUSE_SIZE);
+    warehouseObj = warehouse(scene, WAREHOUSE_SIZE);
   } catch (e) {
-    console.warn('warehouse() prefab missing – using placeholder cube', e);
+    console.warn("warehouse() prefab missing – using placeholder cube", e);
     warehouseObj = new THREE.Mesh(
       new THREE.BoxGeometry(WAREHOUSE_SIZE, 20, WAREHOUSE_SIZE),
       new THREE.MeshStandardMaterial({ color: 0x999999 })
