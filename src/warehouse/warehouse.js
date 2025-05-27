@@ -11,9 +11,11 @@ async function getWallMatrix() {
 }
 
 export const wallMatrix = await getWallMatrix();
-console.log(wallMatrix);
+// console.log(wallMatrix);
 
-export function warehouse(floorSize) {
+export const pointLights = [];
+
+export function warehouse(scene, floorSize) {
   const warehouse = new THREE.Group();
 
   /* ─────────────────────────────────── FLOOR ──────────────────────────────────── */
@@ -23,14 +25,26 @@ export function warehouse(floorSize) {
     "textures/concrete/Untitled4.glb",
     (gltf) => {
       const floor = gltf.scene;
+      //floor.scale.set(0.1, 0.1, 0.1);
       floor.position.set(50, 0, 50);
-      // floor.rotation.x = -Math.PI / 2;
 
-      // const roof = gltf.scene.clone(true);
-      // roof.position.set(50, WALL_HEIGHT, 50);
+      // floor.traverse((child) => {
+      //   if (child.isMesh) {
+      //     // Convert to light-reactive material if needed
+      //     if (!(child.material instanceof THREE.MeshStandardMaterial)) {
+      //       const oldMat = child.material;
+      //       child.material = new THREE.MeshStandardMaterial({
+      //         map: oldMat.map || null,
+      //         color: oldMat.color || new THREE.Color(0xffffff),
+      //         side: THREE.DoubleSide,
+      //       });
+      //     }
+      //     child.receiveShadow = true;
+      //     child.castShadow = false; // usually floor doesn't cast shadow
+      //   }
+      // });
 
       warehouse.add(floor);
-      // warehouse.add(roof);
     },
     undefined,
     (error) => {
@@ -60,6 +74,28 @@ export function warehouse(floorSize) {
         const wall = createWallTile(TILE_SIZE, WALL_HEIGHT);
         wall.position.set(col * TILE_SIZE, WALL_HEIGHT / 2, row * TILE_SIZE);
         warehouse.add(wall);
+      } else if (wallMatrix[row][col] === 2) {
+        // Create a hanging point light
+        const light = new THREE.PointLight(0xffffff, 2, 30);
+        const lightX = col * TILE_SIZE + TILE_SIZE / 2;
+        const lightY = WALL_HEIGHT - 0.5; // slightly below ceiling
+        const lightZ = row * TILE_SIZE + TILE_SIZE / 2;
+        light.position.set(lightX, lightY, lightZ);
+        // light.castShadow = true;
+        // light.visible = false;
+        scene.add(light);
+
+        pointLights.push(light);
+
+        const helper = new THREE.PointLightHelper(light, 0.5);
+        scene.add(helper);
+
+        // Optional: Add visible bulb mesh
+        const bulbGeometry = new THREE.SphereGeometry(0.2, 16, 8);
+        const bulbMaterial = new THREE.MeshBasicMaterial({ color: 0xffffaa });
+        const bulb = new THREE.Mesh(bulbGeometry, bulbMaterial);
+        bulb.position.set(lightX, lightY, lightZ);
+        warehouse.add(bulb);
       }
     }
   }

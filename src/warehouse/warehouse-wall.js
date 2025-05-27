@@ -56,10 +56,10 @@ export function createWallTile(size = 2, height = 5) {
 
   // const material = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
   const material = new THREE.MeshStandardMaterial({
-    map: colorMap,
-    normalMap: normalMap,
-    roughnessMap: roughnessMap,
-    aoMap: aoMap,
+    // map: colorMap,
+    // normalMap: normalMap,
+    // roughnessMap: roughnessMap,
+    // aoMap: aoMap,
   });
 
   const wall = new THREE.Mesh(geometry, material);

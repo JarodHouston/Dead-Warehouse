@@ -5,10 +5,13 @@ import { OctreeHelper } from "three/examples/jsm/helpers/OctreeHelper.js";
 import { Capsule } from "three/examples/jsm/math/Capsule.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
-import { warehouse } from "./src/warehouse/warehouse.js";
+import {
+  TILE_SIZE,
+  warehouse,
+  wallMatrix,
+  pointLights,
+} from "./src/warehouse/warehouse.js";
 import { computeZombieNextStep } from "./src/zombie/pathfinding.js";
-import { TILE_SIZE } from "./src/warehouse/warehouse.js";
-import { wallMatrix } from "./src/warehouse/warehouse.js";
 import { createZombie } from "./src/zombie/model.js";
 
 /* ─────────────────────────────── GLOBAL CONSTANTS ────────────────────────────── */
@@ -33,6 +36,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
 /* ─────────────────────────────── CAMERA & CONTROLS ───────────────────────────── */
@@ -78,8 +82,8 @@ if (DEV_MODE) {
 }
 
 /* ─────────────────────────────────── LIGHTS ──────────────────────────────────── */
-scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-const sun = new THREE.DirectionalLight(0xffffff, 1.0);
+scene.add(new THREE.AmbientLight(0xffffff, 0.05));
+const sun = new THREE.DirectionalLight(0xffffff, 0.1);
 sun.position.set(100, 200, 100);
 sun.castShadow = true;
 scene.add(sun);
@@ -98,7 +102,7 @@ scene.add(terrain);
 /* ─────────────────────────────── WAREHOUSE PROP ─────────────────────────────── */
 let warehouseObject;
 try {
-  warehouseObject = warehouse(WAREHOUSE_SIZE);
+  warehouseObject = warehouse(scene, WAREHOUSE_SIZE);
   scene.add(warehouseObject);
 } catch (e) {
   console.warn("warehouse() prefab missing – using placeholder cube", e);
@@ -267,6 +271,12 @@ function animate() {
       zombie.position.set(zombieTile.x, 0, zombieTile.y);
     }
   }
+
+  // Show point lights that are close to player
+  pointLights.forEach((light) => {
+    const distance = light.position.distanceTo(camera.position);
+    light.visible = distance <= 20;
+  });
 
   renderer.render(scene, camera);
   stats.update();
