@@ -19,12 +19,12 @@ if (!colorMap || !normalMap || !roughnessMap || !aoMap) {
   console.log("Error loading textures in warehouse-wall.js");
 }
 
-// [colorMap, normalMap, roughnessMap, aoMap].forEach((map) => {
-//   map.wrapS = map.wrapT = THREE.RepeatWrapping;
-//   map.repeat.set(2, 2);
-//   map.rotation = Math.PI / 2;
-//   map.center.set(0.5, 0.5);
-// });
+[colorMap, normalMap, roughnessMap, aoMap].forEach((map) => {
+  map.wrapS = map.wrapT = THREE.RepeatWrapping;
+  map.repeat.set(2, 2);
+  map.rotation = Math.PI / 2;
+  map.center.set(0.5, 0.5);
+});
 
 export async function loadWallMatrix() {
   try {
@@ -39,10 +39,24 @@ export async function loadWallMatrix() {
   }
 }
 
-export function createWallTile(size = 2, height = 5) {
-  const geometry = new THREE.BoxGeometry(size, height, size);
+const wallTexture = textureLoader.load(
+  "textures/brick/brick-blender-image4.png"
+);
 
-  geometry.attributes.uv2 = geometry.attributes.uv;
+// const wallGeometry = new THREE.BoxGeometry(width, height, depth);
+const wallMaterial = new THREE.MeshStandardMaterial({ map: wallTexture });
+
+export function createWallTile(size = 1, height = 15) {
+  const wallGeometry = new THREE.BoxGeometry(size, height, size);
+
+  wallTexture.wrapS = THREE.RepeatWrapping;
+  wallTexture.wrapT = THREE.RepeatWrapping;
+  wallTexture.repeat.set(0.5, 2); // Adjust to repeat the texture
+
+  // const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
+  const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+
+  // geometry.attributes.uv2 = geometry.attributes.uv;
 
   // // Random offset in UV space
   // const offsetX = Math.random();
@@ -55,14 +69,14 @@ export function createWallTile(size = 2, height = 5) {
   // }
 
   // const material = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
-  const material = new THREE.MeshStandardMaterial({
-    // map: colorMap,
-    // normalMap: normalMap,
-    // roughnessMap: roughnessMap,
-    // aoMap: aoMap,
-  });
+  // const material = new THREE.MeshStandardMaterial({
+  //   map: colorMap,
+  //   normalMap: normalMap,
+  //   roughnessMap: roughnessMap,
+  //   aoMap: aoMap,
+  // });
 
-  const wall = new THREE.Mesh(geometry, material);
+  // const wall = new THREE.Mesh(geometry, material);
   wall.castShadow = true;
   wall.receiveShadow = true;
 

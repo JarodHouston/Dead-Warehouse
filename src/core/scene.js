@@ -8,7 +8,7 @@ export function createScene() {
   scene.background = new THREE.Color(0x110124);
 
   /* lights */
-  // scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+  // scene.add(new THREE.AmbientLight(0xffffff, 1));
   // const sun = new THREE.DirectionalLight(0xffffff, 1);
   // sun.position.set(100, 200, 100);
   // sun.castShadow = true;

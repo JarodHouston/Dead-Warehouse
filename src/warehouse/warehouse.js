@@ -18,52 +18,23 @@ export function warehouse(scene, floorSize) {
   const warehouse = new THREE.Group();
 
   /* ─────────────────────────────────── FLOOR ──────────────────────────────────── */
-
-  const loader = new GLTFLoader();
-  loader.load(
-    "textures/concrete/Untitled4.glb",
-    (gltf) => {
-      const floor = gltf.scene;
-      //floor.scale.set(0.1, 0.1, 0.1);
-      floor.position.set(50, 0, 50);
-
-      // floor.traverse((child) => {
-      //   if (child.isMesh) {
-      //     // Convert to light-reactive material if needed
-      //     if (!(child.material instanceof THREE.MeshStandardMaterial)) {
-      //       const oldMat = child.material;
-      //       child.material = new THREE.MeshStandardMaterial({
-      //         map: oldMat.map || null,
-      //         color: oldMat.color || new THREE.Color(0xffffff),
-      //         side: THREE.DoubleSide,
-      //       });
-      //     }
-      //     child.receiveShadow = true;
-      //     child.castShadow = false; // usually floor doesn't cast shadow
-      //   }
-      // });
-
-      warehouse.add(floor);
-    },
-    undefined,
-    (error) => {
-      console.error("Error loading floor model:", error);
-    }
+  const textureLoader = new THREE.TextureLoader();
+  const floorTexture = textureLoader.load(
+    "textures/concrete/concrete-image3.png"
   );
+  floorTexture.wrapS = THREE.RepeatWrapping;
+  floorTexture.wrapT = THREE.RepeatWrapping;
+  floorTexture.repeat.set(3, 3); // Adjust to repeat the texture
 
-  // const floorGeometry = new THREE.PlaneGeometry(floorSize, floorSize);
-  // const floorMaterial = new THREE.MeshStandardMaterial({
-  //   color: 0xffffff,
-  //   side: THREE.DoubleSide,
-  // }); // other colors: 0x808080, 0x6e6e6e, 0xb3b3b3
+  const floorMaterial = new THREE.MeshStandardMaterial({
+    map: floorTexture,
+  });
+  const floorGeometry = new THREE.PlaneGeometry(floorSize, floorSize);
+  const floorMesh = new THREE.Mesh(floorGeometry, floorMaterial);
 
-  // const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-  // floor.rotation.x = -Math.PI / 2;
-  // floor.position.x = 50;
-  // floor.position.z = 50;
-  // floor.position.y = 0; // doesn't need to be above ground if there's the hole in the terrain
-
-  // warehouse.add(floor);
+  floorMesh.rotation.x = -Math.PI / 2;
+  floorMesh.position.set(50, 0, 50);
+  scene.add(floorMesh);
 
   /* ─────────────────────────────────── WALLS ──────────────────────────────────── */
 
@@ -75,9 +46,9 @@ export function warehouse(scene, floorSize) {
         warehouse.add(wall);
       } else if (wallMatrix[row][col] === 2) {
         // Create a hanging point light
-        const light = new THREE.PointLight(0xffffff, 5, 40);
+        const light = new THREE.PointLight(0xffffff, 20, 40);
         const lightX = col * TILE_SIZE + TILE_SIZE / 2;
-        const lightY = WALL_HEIGHT - 0.5; // slightly below ceiling
+        const lightY = WALL_HEIGHT - 0.75; // slightly below ceiling
         const lightZ = row * TILE_SIZE + TILE_SIZE / 2;
         light.position.set(lightX, lightY, lightZ);
 
@@ -85,8 +56,8 @@ export function warehouse(scene, floorSize) {
         // light.visible = false;
         scene.add(light);
 
-        const helper = new THREE.PointLightHelper(light, 0.5);
-        scene.add(helper);
+        // const helper = new THREE.PointLightHelper(light, 0.5);
+        // scene.add(helper);
 
         // Optional: Add visible bulb mesh
         const bulbGeometry = new THREE.SphereGeometry(0.2, 16, 8);
@@ -101,6 +72,17 @@ export function warehouse(scene, floorSize) {
   }
 
   /* ─────────────────────────────────── ROOF ──────────────────────────────────── */
+
+  const roofGeometry = new THREE.PlaneGeometry(floorSize, floorSize);
+  const roofMesh = new THREE.Mesh(roofGeometry, floorMaterial);
+
+  // Flip the plane to face down (so it’s visible from below)
+  roofMesh.rotation.x = Math.PI / 2;
+
+  // Set roof height (e.g., same as wall height)
+  roofMesh.position.set(50, WALL_HEIGHT, 50); // Assuming wall height is 15
+
+  scene.add(roofMesh);
   // const roofGeometry = new THREE.PlaneGeometry(floorSize, floorSize);
   // const roofMaterial = new THREE.MeshStandardMaterial({
   //   color: 0xaaaaaa,
@@ -115,25 +97,25 @@ export function warehouse(scene, floorSize) {
 
   // warehouse.add(roof);
 
-  const roofLoader = new GLTFLoader();
-  roofLoader.load(
-    "textures/concrete/Untitled4.glb",
-    (gltf) => {
-      const roof = gltf.scene;
-      roof.position.set(50, WALL_HEIGHT, 50);
-      // roof.rotation.x = -Math.PI / 2;
+  // const roofLoader = new GLTFLoader();
+  // roofLoader.load(
+  //   "textures/concrete/Untitled4.glb",
+  //   (gltf) => {
+  //     const roof = gltf.scene;
+  //     roof.position.set(50, WALL_HEIGHT, 50);
+  //     // roof.rotation.x = -Math.PI / 2;
 
-      // const roof = gltf.scene.clone(true);
-      // roof.position.set(50, WALL_HEIGHT, 50);
+  //     // const roof = gltf.scene.clone(true);
+  //     // roof.position.set(50, WALL_HEIGHT, 50);
 
-      warehouse.add(roof);
-      // warehouse.add(roof);
-    },
-    undefined,
-    (error) => {
-      console.error("Error loading roof model:", error);
-    }
-  );
+  //     warehouse.add(roof);
+  //     // warehouse.add(roof);
+  //   },
+  //   undefined,
+  //   (error) => {
+  //     console.error("Error loading roof model:", error);
+  //   }
+  // );
 
   return warehouse;
 }
