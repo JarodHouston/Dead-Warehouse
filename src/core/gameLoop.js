@@ -4,6 +4,7 @@ import { SUBSTEPS } from "./constants.js";
 import { getKeys } from "./input.js";
 import { handleInput, playerPhysics } from "./physics.js";
 import { pointLights } from "../warehouse/warehouse.js";
+import { updateRecoil } from "../gun/gun.js";
 
 export function startGameLoop({
   camera,
@@ -14,6 +15,7 @@ export function startGameLoop({
   playerCollider,
   spawnPos,
   updateZombie,
+  updateRecoil,
 }) {
   const clock = new THREE.Clock();
   const stats = new Stats();
@@ -39,6 +41,7 @@ export function startGameLoop({
     }
     controls.getObject().position.copy(playerCollider.end);
 
+    updateRecoil();
     updateZombie(clock.getElapsedTime()); // your AI tick
 
     // Show point lights that are close to player
