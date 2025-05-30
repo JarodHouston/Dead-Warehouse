@@ -3,11 +3,12 @@ import Stats          from 'three/examples/jsm/libs/stats.module.js';
 import { SUBSTEPS }   from './constants.js';
 import { getKeys }    from './input.js';
 import { handleInput, playerPhysics } from './physics.js';
+import { updateRecoil } from '../gun/gun.js';
 
 export function startGameLoop({
   camera, controls, renderer, scene,
   worldOctree, playerCollider, spawnPos,
-  updateZombie
+  updateZombie, updateRecoil
 }) {
   const clock   = new THREE.Clock();
   const stats   = new Stats();
@@ -29,6 +30,7 @@ export function startGameLoop({
     }
     controls.getObject().position.copy(playerCollider.end);
 
+    updateRecoil();
     updateZombie(clock.getElapsedTime());   // your AI tick
     renderer.render(scene, camera);
     stats.update();
