@@ -55,8 +55,6 @@ export function startGameLoop({
       // bulb.material.emissiveIntensity = active ? 1 : 0;
     });
 
-    console.log(camera.position);
-
     renderer.render(scene, camera);
     stats.update();
   }

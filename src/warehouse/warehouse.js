@@ -14,6 +14,9 @@ export const wallMatrix = await getWallMatrix();
 
 export const pointLights = [];
 
+const loader = new GLTFLoader();
+let shelvesModel = null;
+
 export function warehouse(scene, floorSize) {
   const warehouse = new THREE.Group();
 
@@ -67,6 +70,33 @@ export function warehouse(scene, floorSize) {
 
         pointLights.push({ light, bulb });
         warehouse.add(bulb);
+      } else if (wallMatrix[row][col] === 3) {
+        if (!shelvesModel) {
+          loader.load(
+            "assets/models/psx_storage_shelves__cardboard_boxs.glb",
+            (gltf) => {
+              shelvesModel = gltf.scene;
+              shelvesModel.scale.set(1, 1, 1); // Adjust scale if needed
+
+              if (wallMatrix[row][col - 1] != -1) {
+                shelvesModel.rotation.y = Math.PI / 2; // top down view: boxes on right
+              } else if (wallMatrix[row + 1][col] != -1) {
+                shelvesModel.rotation.y = Math.PI; // top down view: boxes on top
+              } else if (wallMatrix[row][col + 1] != -1) {
+                shelvesModel.rotation.y = -Math.PI / 2; // top down view: boxes on left
+              } // top down view: boxes on bottom
+
+              shelvesModel.position.set(col * TILE_SIZE, 0, row * TILE_SIZE);
+              scene.add(shelvesModel);
+            },
+            undefined,
+            (error) => {
+              console.error("Error loading model:", error);
+            }
+          );
+        } else {
+          scene.add(shelvesModel);
+        }
       }
     }
   }
