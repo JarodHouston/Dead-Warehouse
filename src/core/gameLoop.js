@@ -52,6 +52,20 @@ export function startGameLoop({
       light.visible = active;
       bulb.visible = active;
 
+      if (active) {
+        const baseIntensity = 20;
+
+        // Random burst chance
+        if (Math.random() < 0.002) {
+          light.intensity = baseIntensity * (0.5 + Math.random() * 0.5); // burst flicker
+        } else if (Math.random() < 0.003) {
+          light.intensity = baseIntensity * (Math.random() * 0.5);
+        } else {
+          const flicker = Math.random() * 0.2 - 0.1;
+          light.intensity = baseIntensity + flicker;
+        }
+      }
+
       // bulb.material.emissiveIntensity = active ? 1 : 0;
     });
 
