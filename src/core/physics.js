@@ -1,10 +1,9 @@
-import * as THREE from 'three';
-import {
-  WALK_SPEED, JUMP_SPEED, GRAVITY
-} from './constants.js';
+import * as THREE from "three";
+import { WALK_SPEED, SPRINT_SPEED, JUMP_SPEED, GRAVITY } from "./constants.js";
+import { isSprinting } from "./gameLoop.js";
 
-const tmpVec  = new THREE.Vector3();
-const side    = new THREE.Vector3();
+const tmpVec = new THREE.Vector3();
+const side = new THREE.Vector3();
 
 export function handleInput(dt, keys, velocity, camera, onFloor) {
   /* 1  Build horizontal vector */
@@ -16,23 +15,29 @@ export function handleInput(dt, keys, velocity, camera, onFloor) {
 
   if (horiz.lengthSq() > 0) {
     camera.getWorldDirection(tmpVec); // forward
-    tmpVec.y = 0; tmpVec.normalize();
+    tmpVec.y = 0;
+    tmpVec.normalize();
     side.crossVectors(tmpVec, camera.up).normalize();
 
-    const moveDir = tmpVec.multiplyScalar(-horiz.z)
-                    .add(side.clone().multiplyScalar(horiz.x));
+    const moveDir = tmpVec
+      .multiplyScalar(-horiz.z)
+      .add(side.clone().multiplyScalar(horiz.x));
 
-    velocity.x = moveDir.x * WALK_SPEED;
-    velocity.z = moveDir.z * WALK_SPEED;
+    velocity.x = moveDir.x * (isSprinting ? SPRINT_SPEED : WALK_SPEED);
+    velocity.z = moveDir.z * (isSprinting ? SPRINT_SPEED : WALK_SPEED);
   } else {
     velocity.x = velocity.z = 0;
   }
 
-  if (onFloor && keys[' ']) velocity.y = JUMP_SPEED;
+  if (onFloor && keys[" "]) velocity.y = JUMP_SPEED;
 }
 
 export function playerPhysics(
-  playerCollider, velocity, worldOctree, spawnPos, dt
+  playerCollider,
+  velocity,
+  worldOctree,
+  spawnPos,
+  dt
 ) {
   let onFloor = false;
 
@@ -54,7 +59,7 @@ export function playerPhysics(
   if (playerCollider.end.y < -10) {
     playerCollider.start.set(spawnPos.x, playerCollider.radius, spawnPos.z);
     playerCollider.end.set(spawnPos.x, playerCollider.height, spawnPos.z);
-    velocity.set(0,0,0);
+    velocity.set(0, 0, 0);
     onFloor = true;
   }
 
