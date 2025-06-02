@@ -18,6 +18,11 @@ import { createScene } from "./src/core/scene.js";
 import { createControls } from "./src/core/controls.js";
 import { createPlayerCollider } from "./src/player/player.js";
 import { startGameLoop } from "./src/core/gameLoop.js";
+import {
+  playBackgroundMusic,
+  loadWalkSound,
+  loadSprintSound,
+} from "./src/core/audio.js";
 
 import { computeZombieNextStep } from "./src/zombie/pathfinding.js";
 import { createZombie } from "./src/zombie/model.js";
@@ -41,6 +46,13 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   DEV_MODE ? 1000 : 500
 );
+
+const listener = new THREE.AudioListener();
+camera.add(listener);
+
+const walkSound = loadWalkSound(listener);
+const sprintSound = loadSprintSound(listener);
+playBackgroundMusic(listener);
 
 const weaponAnchor = new THREE.Object3D();
 camera.add(weaponAnchor);
@@ -136,6 +148,8 @@ startGameLoop({
   spawnPos: spawn,
   updateZombie,
   updateRecoil,
+  walkSound,
+  sprintSound,
 });
 
 /* resize */

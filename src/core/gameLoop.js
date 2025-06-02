@@ -22,6 +22,8 @@ export function startGameLoop({
   spawnPos,
   updateZombie,
   updateRecoil,
+  walkSound,
+  sprintSound,
 }) {
   const clock = new THREE.Clock();
   const stats = new Stats();
@@ -36,7 +38,15 @@ export function startGameLoop({
     const step = Math.min(0.05, dt) / SUBSTEPS;
 
     for (let i = 0; i < SUBSTEPS; i++) {
-      handleInput(step, getKeys(), velocity, camera, onFloor);
+      handleInput(
+        step,
+        getKeys(),
+        velocity,
+        camera,
+        onFloor,
+        walkSound,
+        sprintSound
+      );
       onFloor = playerPhysics(
         playerCollider,
         velocity,

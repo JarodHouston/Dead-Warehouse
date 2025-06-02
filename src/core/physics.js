@@ -5,16 +5,28 @@ import { isSprinting } from "./gameLoop.js";
 const tmpVec = new THREE.Vector3();
 const side = new THREE.Vector3();
 
-export function handleInput(dt, keys, velocity, camera, onFloor) {
-  /* 1  Build horizontal vector */
+let lastStepTime = 0;
+const activeFootstepSounds = []; // Store currently playing footstep sounds
+
+export function handleInput(
+  dt,
+  keys,
+  velocity,
+  camera,
+  onFloor,
+  walkSound,
+  sprintSound
+) {
   const horiz = new THREE.Vector3(
     Number(keys.d) - Number(keys.a),
     0,
     Number(keys.s) - Number(keys.w)
   );
 
-  if (horiz.lengthSq() > 0) {
-    camera.getWorldDirection(tmpVec); // forward
+  const isMoving = horiz.lengthSq() > 0;
+
+  if (isMoving) {
+    camera.getWorldDirection(tmpVec);
     tmpVec.y = 0;
     tmpVec.normalize();
     side.crossVectors(tmpVec, camera.up).normalize();
@@ -25,6 +37,26 @@ export function handleInput(dt, keys, velocity, camera, onFloor) {
 
     velocity.x = moveDir.x * (isSprinting ? SPRINT_SPEED : WALK_SPEED);
     velocity.z = moveDir.z * (isSprinting ? SPRINT_SPEED : WALK_SPEED);
+
+    if (onFloor) {
+      const now = performance.now();
+      const stepInterval = isSprinting ? 600 : 900;
+
+      if (now - lastStepTime > stepInterval) {
+        // Stop all current footstep sounds
+        activeFootstepSounds.forEach((snd) => {
+          if (snd.isPlaying) snd.stop();
+        });
+        activeFootstepSounds.length = 0; // Clear the array
+
+        // Clone and play new sound
+        const newSound = (isSprinting ? sprintSound : walkSound).clone();
+        newSound.play();
+        activeFootstepSounds.push(newSound);
+
+        lastStepTime = now;
+      }
+    }
   } else {
     velocity.x = velocity.z = 0;
   }
