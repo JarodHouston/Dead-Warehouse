@@ -22,6 +22,7 @@ import {
   playBackgroundMusic,
   loadWalkSound,
   loadSprintSound,
+  loadGunSound,
 } from "./src/core/audio.js";
 
 import { ZombieGroup } from "./src/zombie/zombieGroup";
@@ -69,7 +70,6 @@ if (!DEV_MODE) scene.add(controls.object);
 /* player collider */
 const playerCollider = createPlayerCollider(spawn);
 
-
 // gun
 const gltfLoader = new GLTFLoader();
 let gun;
@@ -79,7 +79,6 @@ gltfLoader.load("./src/gun/result.gltf", (gltf) => {
   gun.rotation.set(weapRotX, weapRotY, weapRotZ); // e.g. Z-up → Y-up, flip to face forward
   gun.scale.setScalar(weapScale);
   weaponAnchor.add(gun);
-
 });
 
 // renderer.domElement.addEventListener('pointerdown', handlePointerDown);
@@ -94,6 +93,7 @@ renderer.domElement.addEventListener("click", (e) => {
 
 function shoot(e) {
   if (e.button !== 0) return;
+  loadGunSound(listener);
   gunRecoil();
 }
 
