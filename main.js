@@ -34,6 +34,12 @@ import {
   handlePointerDown,
   handleMouseDown,
 } from "./src/gun/gun.js";
+import {
+  initBulletSystem,
+  spawnBullet,
+  updateBullets,
+  setTargets,
+} from "./src/gun/bulletSystem.js";
 
 /* ── boot ──────────────────────────────────────────────────────────────────── */
 const renderer = createRenderer();
@@ -46,6 +52,8 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   DEV_MODE ? 1000 : 500
 );
+
+initBulletSystem(camera, scene);
 
 const listener = new THREE.AudioListener();
 camera.add(listener);
@@ -74,6 +82,7 @@ const playerCollider = createPlayerCollider(spawn);
 let zombieTile = { x: 10, y: 10 };
 const zombie = createZombie(0x00aa00);
 scene.add(zombie);
+setTargets([zombie]);
 
 // gun
 const gltfLoader = new GLTFLoader();
@@ -98,7 +107,8 @@ renderer.domElement.addEventListener("click", (e) => {
 
 function shoot(e) {
   if (e.button !== 0) return;
-  gunRecoil();
+  updateRecoil();
+  spawnBullet(gun);
 }
 
 function requestLock() {
@@ -148,8 +158,10 @@ startGameLoop({
   spawnPos: spawn,
   updateZombie,
   updateRecoil,
+  updateBullets,
   walkSound,
   sprintSound,
+  onUpdate:updateBullets,
 });
 
 /* resize */

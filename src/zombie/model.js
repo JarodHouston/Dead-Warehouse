@@ -31,5 +31,8 @@ export function createZombie(materialColor = 0x00ff00) {
   character.add(leftLeg);
   character.add(rightLeg);
 
+  character.onHit = () => {
+    character.parent?.remove(character);
+  };
   return character;
 }
