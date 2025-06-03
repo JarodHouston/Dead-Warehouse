@@ -91,8 +91,10 @@ renderer.domElement.addEventListener("click", (e) => {
   if (!controls.isLocked) controls.lock(); // first click → lock cursor
 });
 
+const raycaster = new THREE.Raycaster();
 function shoot(e) {
   if (e.button !== 0) return;
+  // shoot(raycaster);
   loadGunSound(listener);
   gunRecoil();
 }
