@@ -6,6 +6,12 @@ import { handleInput, playerPhysics } from "./physics.js";
 import { pointLights } from "../warehouse/warehouse.js";
 import { updateRecoil } from "../gun/gun.js";
 
+let targetFOV = 75; // default FOV
+const sprintFOV = 90; // FOV when sprinting
+const normalFOV = 75; // FOV when walking
+
+export let isSprinting = false;
+
 export function startGameLoop({
   camera,
   controls,
@@ -16,6 +22,8 @@ export function startGameLoop({
   spawnPos,
   updateZombie,
   updateRecoil,
+  walkSound,
+  sprintSound,
 }) {
   const clock = new THREE.Clock();
   const stats = new Stats();
@@ -30,7 +38,15 @@ export function startGameLoop({
     const step = Math.min(0.05, dt) / SUBSTEPS;
 
     for (let i = 0; i < SUBSTEPS; i++) {
-      handleInput(step, getKeys(), velocity, camera, onFloor);
+      handleInput(
+        step,
+        getKeys(),
+        velocity,
+        camera,
+        onFloor,
+        walkSound,
+        sprintSound
+      );
       onFloor = playerPhysics(
         playerCollider,
         velocity,
@@ -40,6 +56,10 @@ export function startGameLoop({
       );
     }
     controls.getObject().position.copy(playerCollider.end);
+
+    // Change perspective for sprint
+    camera.fov += (targetFOV - camera.fov) * 0.1;
+    camera.updateProjectionMatrix();
 
     updateRecoil();
     updateZombie(clock.getElapsedTime()); // your AI tick
@@ -75,3 +95,17 @@ export function startGameLoop({
 
   animate();
 }
+
+document.addEventListener("keydown", (e) => {
+  if (e.code === "ShiftLeft") {
+    isSprinting = true;
+    targetFOV = sprintFOV;
+  }
+});
+
+document.addEventListener("keyup", (e) => {
+  if (e.code === "ShiftLeft") {
+    isSprinting = false;
+    targetFOV = normalFOV;
+  }
+});
