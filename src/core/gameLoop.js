@@ -76,9 +76,7 @@ export function startGameLoop({
         step
       );
     }
-
-    // Keep camera anchored to collider end cap.
-    controls.getObject().position.copy(playerCollider.end);
+    controls.object.position.copy(playerCollider.end);
 
     // ── Variable‑rate updates -------------------------------------------------
     camera.fov += (targetFOV - camera.fov) * 0.1;

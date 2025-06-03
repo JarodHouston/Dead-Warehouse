@@ -2,11 +2,9 @@ import { wallMatrix } from "../warehouse/warehouse";
 import { meshMatrix } from "../warehouse/warehouse";
 import * as THREE from "three";
 
-
-
 // 1. Precompute the = neighborhood (radius = 3) â†’ 48 offsets
 const NEIGHBORS_RADIUS_3_SQUARE = [];
-const rad = 3;
+const rad = 1;
 for (let dx = -rad; dx <= rad; dx++) {
   for (let dy = -rad; dy <= rad; dy++) {
     if (dx === 0 && dy === 0) continue;
@@ -22,10 +20,10 @@ function dist(a, b) {
 // 4. Checks collisionâ€free â€œsweepâ€ of a circle from `fromPos` â†’ `toPos`
 function isPathClear(fP, tP, r) {
   const fromPos = new THREE.Vector3(fP.x, 0.5, fP.y);
-  const toPos   = new THREE.Vector3(tP.x, 0.5, tP.y);
+  const toPos = new THREE.Vector3(tP.x, 0.5, tP.y);
 
   // build direction & perpendicular
-  const dir  = new THREE.Vector3().subVectors(toPos, fromPos);
+  const dir = new THREE.Vector3().subVectors(toPos, fromPos);
   const dist = dir.length();
   dir.normalize();
   const perp = new THREE.Vector3(-dir.z, 0, dir.x);
@@ -33,7 +31,7 @@ function isPathClear(fP, tP, r) {
   // three ray origins
   const origins = [
     fromPos.clone(),
-    fromPos.clone().addScaledVector(perp,  r),
+    fromPos.clone().addScaledVector(perp, r),
     fromPos.clone().addScaledVector(perp, -r),
   ];
 
@@ -41,19 +39,20 @@ function isPathClear(fP, tP, r) {
   const cx = Math.floor(fP.x);
   const cy = Math.floor(fP.y);
   const localMeshes = [];
-    // include the center tile
+  // include the center tile
   const center = meshMatrix[cy]?.[cx];
   if (center) localMeshes.push(center);
   // include all 48 neighbors
   for (const { dx, dy } of NEIGHBORS_RADIUS_3_SQUARE) {
     const m = meshMatrix[cy + dy]?.[cx + dx];
     if (m) localMeshes.push(m);
-  } if (localMeshes.length === 0) return true;
+  }
+  if (localMeshes.length === 0) return true;
 
   // 3) raycast against that tiny subset
   const rc = new THREE.Raycaster();
   rc.near = 0;
-  rc.far  = dist;
+  rc.far = dist;
 
   for (let origin of origins) {
     rc.set(origin, dir);
@@ -71,26 +70,29 @@ function isPathClear(fP, tP, r) {
 export function getNextStep(position, targetTile, radius = 0.5) {
   const startTile = {
     x: Math.floor(position.x),
-    y: Math.floor(position.y)
+    y: Math.floor(position.y),
   };
   const goalTile = { x: targetTile.x, y: targetTile.y };
   if (startTile == goalTile) return null;
   const startKey = `${startTile.x},${startTile.y}`;
-  const goalKey  = `${goalTile.x},${goalTile.y}`;
+  const goalKey = `${goalTile.x},${goalTile.y}`;
 
-  const openSet = [ startTile ];
+  const openSet = [startTile];
   const cameFrom = new Map();
-  const gScore   = new Map([[ startKey, 0 ]]);
-  const fScore   = new Map([[ startKey, dist(
-    { x: startTile.x + 0.5, y: startTile.y + 0.5 },
-    { x: goalTile.x  + 0.5, y: goalTile.y  + 0.5 }
-  ) ]]);
+  const gScore = new Map([[startKey, 0]]);
+  const fScore = new Map([
+    [
+      startKey,
+      dist(
+        { x: startTile.x + 0.5, y: startTile.y + 0.5 },
+        { x: goalTile.x + 0.5, y: goalTile.y + 0.5 }
+      ),
+    ],
+  ]);
 
   const rows = wallMatrix.length;
   const cols = wallMatrix[0].length;
-  const outOfBounds = t =>
-    t.x < 0 || t.y < 0 ||
-    t.y >= rows || t.x >= cols;
+  const outOfBounds = (t) => t.x < 0 || t.y < 0 || t.y >= rows || t.x >= cols;
   if (outOfBounds(goalTile)) {
     return null;
   }
@@ -109,7 +111,7 @@ export function getNextStep(position, targetTile, radius = 0.5) {
       const pathTiles = [];
       let key = goalKey;
       while (key !== startKey) {
-        const [kx, ky] = key.split(',').map(Number);
+        const [kx, ky] = key.split(",").map(Number);
         pathTiles.unshift({ x: kx, y: ky });
         key = cameFrom.get(key);
       }
@@ -122,7 +124,10 @@ export function getNextStep(position, targetTile, radius = 0.5) {
     }
 
     // 5.c. Remove current from openSet
-    openSet.splice(openSet.findIndex(n => `${n.x},${n.y}` === currKey), 1);
+    openSet.splice(
+      openSet.findIndex((n) => `${n.x},${n.y}` === currKey),
+      1
+    );
 
     // 5.d. Explore all 48 neighbors
     for (const { dx, dy } of NEIGHBORS_RADIUS_3_SQUARE) {
@@ -133,26 +138,31 @@ export function getNextStep(position, targetTile, radius = 0.5) {
       if (wallMatrix[neighborTile.y]?.[neighborTile.x] === undefined) continue;
 
       // Compute world-space positions for collision check
-      const fromPos = (currKey === startKey)
-        ? position
-        : { x: current.x + 0.5, y: current.y + 0.5 };
-      const toPos   = { x: neighborTile.x + 0.5, y: neighborTile.y + 0.5 };
+      const fromPos =
+        currKey === startKey
+          ? position
+          : { x: current.x + 0.5, y: current.y + 0.5 };
+      const toPos = { x: neighborTile.x + 0.5, y: neighborTile.y + 0.5 };
 
       // Collisionâ€sweep test
       if (!isPathClear(fromPos, toPos, radius)) {
         continue;
       }
-      
+
       // A* tentative gScore
-      const tentativeG = (gScore.get(currKey) ?? Infinity) + dist(fromPos, toPos);
+      const tentativeG =
+        (gScore.get(currKey) ?? Infinity) + dist(fromPos, toPos);
 
       if (tentativeG < (gScore.get(neighKey) ?? Infinity)) {
         cameFrom.set(neighKey, currKey);
         gScore.set(neighKey, tentativeG);
-        fScore.set(neighKey, tentativeG + dist(toPos, { x: goalTile.x + 0.5, y: goalTile.y + 0.5 }));
+        fScore.set(
+          neighKey,
+          tentativeG + dist(toPos, { x: goalTile.x + 0.5, y: goalTile.y + 0.5 })
+        );
 
         // Add to openSet if not already there
-        if (!openSet.some(n => `${n.x},${n.y}` === neighKey)) {
+        if (!openSet.some((n) => `${n.x},${n.y}` === neighKey)) {
           openSet.push(neighborTile);
         }
       }
