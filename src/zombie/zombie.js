@@ -83,7 +83,7 @@ export class Zombie {
       this.path = this.ZgetNextStep();
       this.pathidx = 0;
       this._recalcCooldown = 0.2;
-      if (this.path[this.pathidx]) {
+      if (this.path && this.path[this.pathidx]) {
         this.targetTile = {
           x: this.path[this.pathidx].x + 0.5,
           y: this.path[this.pathidx].y + 0.5

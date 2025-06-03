@@ -56,7 +56,7 @@ export function startGameLoop({
         step
       );
     }
-    controls.getObject().position.copy(playerCollider.end);
+    controls.object.position.copy(playerCollider.end);
 
     // Change perspective for sprint
     camera.fov += (targetFOV - camera.fov) * 0.1;
