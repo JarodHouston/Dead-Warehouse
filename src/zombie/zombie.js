@@ -77,8 +77,8 @@ export class Zombie {
     
   // }
   animate(elapsed, dt, updatePath) {
-    if (!updatePath && this.isInPlayerRadius(20) && !this.isInPlayerRadius(2)) this._recalcCooldown -= dt;
-    if (updatePath && this.isInPlayerRadius(20) && this._recalcCooldown <= 0 ) {
+    //if (!updatePath && this.isInPlayerRadius(20) && !this.isInPlayerRadius(2)) this._recalcCooldown -= dt;
+    if (updatePath && this.isInPlayerRadius(20) /*&& this._recalcCooldown <= 0*/ ) {
       
       this.path = this.ZgetNextStep();
       this.pathidx = 0;
