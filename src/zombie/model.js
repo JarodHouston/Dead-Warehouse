@@ -1,7 +1,7 @@
 // character.js
 import * as THREE from "three";
 
-export function createZombie(materialColor = 0x00ff00) {
+export function createZombieModel(materialColor = 0x00ff00) {
   const character = new THREE.Group();
   const mat = new THREE.MeshStandardMaterial({ color: materialColor });
 
@@ -31,5 +31,7 @@ export function createZombie(materialColor = 0x00ff00) {
   character.add(leftLeg);
   character.add(rightLeg);
 
+  character.scale.set(0.5,0.5,0.5);
+  character.position.y = 0.5;
   return character;
 }

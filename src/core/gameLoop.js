@@ -6,6 +6,7 @@ import { handleInput, playerPhysics } from "./physics.js";
 import { pointLights } from "../warehouse/warehouse.js";
 import { updateRecoil } from "../gun/gun.js";
 
+
 let targetFOV = 75; // default FOV
 const sprintFOV = 90; // FOV when sprinting
 const normalFOV = 75; // FOV when walking
@@ -20,7 +21,7 @@ export function startGameLoop({
   worldOctree,
   playerCollider,
   spawnPos,
-  updateZombie,
+  zombieGroup,
   updateRecoil,
   walkSound,
   sprintSound,
@@ -36,7 +37,7 @@ export function startGameLoop({
     requestAnimationFrame(animate);
     const dt = clock.getDelta();
     const step = Math.min(0.05, dt) / SUBSTEPS;
-
+    const elapsed = clock.getElapsedTime();
     for (let i = 0; i < SUBSTEPS; i++) {
       handleInput(
         step,
@@ -62,7 +63,7 @@ export function startGameLoop({
     camera.updateProjectionMatrix();
 
     updateRecoil();
-    updateZombie(clock.getElapsedTime()); // your AI tick
+    zombieGroup.animate(elapsed, dt)
 
     // Show point lights that are close to player
     pointLights.forEach(({ light, bulb }) => {

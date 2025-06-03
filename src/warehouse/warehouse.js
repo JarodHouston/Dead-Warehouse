@@ -11,6 +11,7 @@ async function getWallMatrix() {
 
 export const wallMatrix = await getWallMatrix();
 // console.log(wallMatrix);
+export const meshMatrix = wallMatrix.map(row => row.map(() => null));
 
 export const pointLights = [];
 
@@ -34,7 +35,7 @@ export function warehouse(scene, floorSize) {
   });
   const floorGeometry = new THREE.PlaneGeometry(floorSize, floorSize);
   const floorMesh = new THREE.Mesh(floorGeometry, floorMaterial);
-
+  
   floorMesh.rotation.x = -Math.PI / 2;
   floorMesh.position.set(50, 0, 50);
   scene.add(floorMesh);
@@ -47,6 +48,7 @@ export function warehouse(scene, floorSize) {
         const wall = createWallTile(TILE_SIZE, WALL_HEIGHT);
         wall.position.set(col * TILE_SIZE, WALL_HEIGHT / 2, row * TILE_SIZE);
         warehouse.add(wall);
+        meshMatrix[row][col] = wall;
       } else if (wallMatrix[row][col] === 2) {
         // Create a hanging point light
         const light = new THREE.PointLight(0xffffff, 20, 40);
