@@ -7,7 +7,7 @@ import { getNextStep } from "./pathfinding.js";
 
 
 export class Zombie {
-  constructor(group, position, /*health,*/ playerPosition, scene, speed = 0.1) {
+  constructor(group, position, /*health,*/ playerPosition, scene, speed = 1) {
     this.id = null;
     this.speed = speed;
     this.playerPosition = playerPosition;
@@ -124,7 +124,7 @@ export class Zombie {
       }
       if(!this.isInPlayerRadius(2)) {
         // Now move forward (same as before)
-        if (dir.length() < this.speed) {
+        if (dir.length() < this.speed * dt) {
           // Snap to the tile, advance path index
           this.position.x = this.path[this.pathidx].x + 0.5;
           this.position.z = this.path[this.pathidx].y + 0.5;
@@ -139,7 +139,7 @@ export class Zombie {
           };
         } else {
           dir.normalize();
-          this.position.addScaledVector(dir, this.speed);
+          this.position.addScaledVector(dir, this.speed*dt);
         }
       }
     }

@@ -79,8 +79,7 @@ gltfLoader.load("./src/gun/result.gltf", (gltf) => {
   gun.rotation.set(weapRotX, weapRotY, weapRotZ); // e.g. Z-up → Y-up, flip to face forward
   gun.scale.setScalar(weapScale);
   weaponAnchor.add(gun);
-  gun.renderOrder = 999;
-  gun.material.depthTest = false;
+
 });
 
 // renderer.domElement.addEventListener('pointerdown', handlePointerDown);
