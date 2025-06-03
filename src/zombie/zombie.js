@@ -91,7 +91,7 @@ export class Zombie {
       }
     }
   
-    if (this.targetTile  && this.path[0]) {
+    if (this.targetTile  && this.path && this.path[0]) {
       const dir = new THREE.Vector3(
         this.targetTile.x - this.position.x,
         0,
