@@ -25,7 +25,7 @@ export function loadWalkSound(listener) {
     audioLoader.load("audio/walk.mp3", function (buffer) {
       sound.setBuffer(buffer);
       sound.setLoop(false);
-      sound.setVolume(0.1);
+      sound.setVolume(0.05);
     });
   } catch (error) {
     console.log(error);
@@ -42,7 +42,7 @@ export function loadSprintSound(listener) {
     audioLoader.load("audio/sprint.mp3", function (buffer) {
       sound.setBuffer(buffer);
       sound.setLoop(false);
-      sound.setVolume(0.1);
+      sound.setVolume(0.05);
     });
   } catch (error) {
     console.log(error);
@@ -50,4 +50,20 @@ export function loadSprintSound(listener) {
   }
 
   return sound;
+}
+
+export function loadGunSound(listener) {
+  const sound = new THREE.Audio(listener);
+
+  try {
+    audioLoader.load("audio/gunshot.mp3", function (buffer) {
+      sound.setBuffer(buffer);
+      sound.setLoop(false);
+      sound.setVolume(0.2);
+      sound.play();
+    });
+  } catch (error) {
+    console.log(error);
+    console.log("Error trying to load gun shot audio");
+  }
 }
