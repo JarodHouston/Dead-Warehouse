@@ -1,9 +1,11 @@
 import * as THREE from "three";
 import { loadWallMatrix, createWallTile } from "./warehouse-wall";
+import { createShelfTile } from "./warehouse-shelf";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 export const TILE_SIZE = 1;
 const WALL_HEIGHT = 4;
+const SHELF_HEIGHT = 2;
 
 async function getWallMatrix() {
   return await loadWallMatrix();
@@ -17,6 +19,7 @@ export const pointLights = [];
 
 const loader = new GLTFLoader();
 let shelvesModel = null;
+let shelvesModelTemplate = null;
 
 export function warehouse(scene, floorSize) {
   const warehouse = new THREE.Group();
@@ -73,23 +76,34 @@ export function warehouse(scene, floorSize) {
         pointLights.push({ light, bulb });
         warehouse.add(bulb);
       } else if (wallMatrix[row][col] === 3) {
-        if (!shelvesModel) {
+        const shelfWall = createShelfTile(TILE_SIZE, SHELF_HEIGHT);
+        shelfWall.position.set(col * TILE_SIZE, SHELF_HEIGHT / 4, row * TILE_SIZE);
+        warehouse.add(shelfWall);
+
+        const placeShelf = (modelInstance) => {
+          modelInstance.scale.set(1, 1, 1); // Adjust scale if needed
+          modelInstance.rotation.y = 0; // Default rotation
+
+          // Boundary-safe rotation logic (as described above)
+          if (col > 0 && wallMatrix[row][col - 1] !== undefined && wallMatrix[row][col - 1] !== -1) {
+              modelInstance.rotation.y = Math.PI / 2;
+          } else if (row + 1 < wallMatrix.length && wallMatrix[row + 1] !== undefined && wallMatrix[row + 1][col] !== undefined && wallMatrix[row + 1][col] !== -1) {
+              modelInstance.rotation.y = Math.PI;
+          } else if (col + 1 < wallMatrix[row].length && wallMatrix[row][col + 1] !== undefined && wallMatrix[row][col + 1] !== -1) {
+              modelInstance.rotation.y = -Math.PI / 2;
+          }
+
+          modelInstance.position.set(col * TILE_SIZE, 0, row * TILE_SIZE);
+          scene.add(modelInstance);
+        };
+
+        if (!shelvesModelTemplate) {
           loader.load(
             "assets/models/psx_storage_shelves__cardboard_boxs.glb",
             (gltf) => {
-              shelvesModel = gltf.scene;
-              shelvesModel.scale.set(1, 1, 1); // Adjust scale if needed
-
-              if (wallMatrix[row][col - 1] != -1) {
-                shelvesModel.rotation.y = Math.PI / 2; // top down view: boxes on right
-              } else if (wallMatrix[row + 1][col] != -1) {
-                shelvesModel.rotation.y = Math.PI; // top down view: boxes on top
-              } else if (wallMatrix[row][col + 1] != -1) {
-                shelvesModel.rotation.y = -Math.PI / 2; // top down view: boxes on left
-              } // top down view: boxes on bottom
-
-              shelvesModel.position.set(col * TILE_SIZE, 0, row * TILE_SIZE);
-              scene.add(shelvesModel);
+              shelvesModelTemplate = gltf.scene; // Store the loaded model as a template
+              const newShelves = shelvesModelTemplate.clone(); // Clone for this instance
+              placeShelf(newShelves);
             },
             undefined,
             (error) => {
@@ -97,9 +111,16 @@ export function warehouse(scene, floorSize) {
             }
           );
         } else {
-          scene.add(shelvesModel);
+          // If template is already loaded, just clone it
+          const newShelves = shelvesModelTemplate.clone();
+          placeShelf(newShelves);
         }
-      }
+      } 
+      // else if (wallMatrix[row][col] === -1) {
+      //     const shelfWall = createShelfTile(TILE_SIZE, SHELF_HEIGHT);
+      //     shelfWall.position.set(col * TILE_SIZE, SHELF_HEIGHT / 4, row * TILE_SIZE);
+      //     warehouse.add(shelfWall);
+      // }
     }
   }
 

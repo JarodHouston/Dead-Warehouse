@@ -34,6 +34,12 @@ import {
   handlePointerDown,
   handleMouseDown,
 } from "./src/gun/gun.js";
+import {
+  initBulletSystem,
+  spawnBullet,
+  updateBullets,
+  setTargets,
+} from "./src/gun/bulletSystem.js";
 
 /* ── boot ──────────────────────────────────────────────────────────────────── */
 const renderer = createRenderer();
@@ -46,6 +52,8 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   DEV_MODE ? 1000 : 500
 );
+
+initBulletSystem(camera, scene);
 
 const listener = new THREE.AudioListener();
 camera.add(listener);
@@ -96,7 +104,8 @@ function shoot(e) {
   if (e.button !== 0) return;
   // shoot(raycaster);
   loadGunSound(listener);
-  gunRecoil();
+  updateRecoil();
+  spawnBullet(gun);
 }
 
 function requestLock() {
@@ -115,7 +124,7 @@ controls.addEventListener("unlock", () => {
   document.removeEventListener("mousedown", shoot);
 });
 const zombieGroup = new ZombieGroup(30, wallMatrix, camera.position, scene);
-console.log("peo");
+
 /* start loop */
 startGameLoop({
   camera,
@@ -127,8 +136,10 @@ startGameLoop({
   spawnPos: spawn,
   zombieGroup,
   updateRecoil,
+  updateBullets,
   walkSound,
   sprintSound,
+  onUpdate: updateBullets,
 });
 
 /* resize */

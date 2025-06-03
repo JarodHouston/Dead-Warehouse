@@ -4,8 +4,7 @@ import { SUBSTEPS } from "./constants.js";
 import { getKeys } from "./input.js";
 import { handleInput, playerPhysics } from "./physics.js";
 import { pointLights } from "../warehouse/warehouse.js";
-import { updateRecoil } from "../gun/gun.js";
-
+import { updateRecoil as updateGunRecoil } from "../gun/gun.js";
 
 let targetFOV = 75; // default FOV
 const sprintFOV = 90; // FOV when sprinting
@@ -13,6 +12,24 @@ const normalFOV = 75; // FOV when walking
 
 export let isSprinting = false;
 
+/**
+ * Starts the main animation / simulation loop.
+ *
+ * @param {Object} cfg                       – configuration object
+ * @param {THREE.PerspectiveCamera} camera   – player camera
+ * @param {THREE.PointerLockControls} controls – movement controls
+ * @param {THREE.WebGLRenderer} renderer     – renderer
+ * @param {THREE.Scene} scene                – scene to render
+ * @param {THREE.Octree} worldOctree         – collision world
+ * @param {Capsule} playerCollider           – physics capsule
+ * @param {THREE.Vector3} spawnPos           – fallback respawn position
+ * @param {Function} updateZombie(time)      – AI update callback (secs)
+ * @param {Function} updateRecoil()          – gun recoil update callback
+ * @param {THREE.PositionalAudio} walkSound  – footstep audio
+ * @param {THREE.PositionalAudio} sprintSound – sprint audio
+ * @param {Function} [onUpdate]              – OPTIONAL per‑frame callback
+ *                                            receives (deltaSeconds)
+ */
 export function startGameLoop({
   camera,
   controls,
@@ -21,10 +38,11 @@ export function startGameLoop({
   worldOctree,
   playerCollider,
   spawnPos,
+  updateRecoil = () => {},
   zombieGroup,
-  updateRecoil,
   walkSound,
   sprintSound,
+  onUpdate = () => {}, // ← NEW: safely defaults to no‑op
 }) {
   const clock = new THREE.Clock();
   const stats = new Stats();
@@ -35,9 +53,11 @@ export function startGameLoop({
 
   function animate() {
     requestAnimationFrame(animate);
+
     const dt = clock.getDelta();
     const step = Math.min(0.05, dt) / SUBSTEPS;
     const elapsed = clock.getElapsedTime();
+    // ── Fixed‑timestep physics ------------------------------------------------
     for (let i = 0; i < SUBSTEPS; i++) {
       handleInput(
         step,
@@ -56,46 +76,47 @@ export function startGameLoop({
         step
       );
     }
+
+    // Keep camera anchored to collider end cap.
     controls.getObject().position.copy(playerCollider.end);
 
-    // Change perspective for sprint
+    // ── Variable‑rate updates -------------------------------------------------
     camera.fov += (targetFOV - camera.fov) * 0.1;
     camera.updateProjectionMatrix();
 
     updateRecoil();
-    zombieGroup.animate(elapsed, dt)
+    zombieGroup.animate(elapsed, dt);
 
-    // Show point lights that are close to player
+    // Advance external systems (bullets, particles, etc.)
+    onUpdate(dt);
+
+    // ── Environment lights ---------------------------------------------------
     pointLights.forEach(({ light, bulb }) => {
       const distance = light.position.distanceTo(camera.position);
       const active = distance <= 25;
-
-      light.visible = active;
-      bulb.visible = active;
+      light.visible = bulb.visible = active;
 
       if (active) {
         const baseIntensity = 20;
-
-        // Random burst chance
         if (Math.random() < 0.002) {
-          light.intensity = baseIntensity * (0.5 + Math.random() * 0.5); // burst flicker
+          light.intensity = baseIntensity * (0.5 + Math.random() * 0.5);
         } else if (Math.random() < 0.003) {
           light.intensity = baseIntensity * (Math.random() * 0.5);
         } else {
-          const flicker = Math.random() * 0.2 - 0.1;
-          light.intensity = baseIntensity + flicker;
+          light.intensity = baseIntensity + (Math.random() * 0.2 - 0.1);
         }
       }
-
-      // bulb.material.emissiveIntensity = active ? 1 : 0;
     });
 
+    // ── Render ---------------------------------------------------------------
     renderer.render(scene, camera);
     stats.update();
   }
 
   animate();
 }
+
+// ── Sprint toggle (FOV & speed) ---------------------------------------------
 
 document.addEventListener("keydown", (e) => {
   if (e.code === "ShiftLeft") {

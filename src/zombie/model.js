@@ -31,7 +31,10 @@ export function createZombieModel(materialColor = 0x00ff00) {
   character.add(leftLeg);
   character.add(rightLeg);
 
-  character.scale.set(0.5,0.5,0.5);
+  character.scale.set(0.5, 0.5, 0.5);
   character.position.y = 0.5;
+  character.onHit = () => {
+    character.parent?.remove(character);
+  };
   return character;
 }
