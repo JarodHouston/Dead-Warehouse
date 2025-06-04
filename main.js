@@ -11,6 +11,7 @@ import {
   weapRotY,
   weapRotZ,
   weapScale,
+  gunColor,
 } from "./src/core/constants.js";
 
 import { createRenderer } from "./src/core/renderer.js";
@@ -93,7 +94,7 @@ gltfLoader.load("./src/gun/result.gltf", (gltf) => {
   gun.traverse((child) => {
     if (child.isMesh) {
       child.material = child.material.clone();
-      if ('color' in child.material) child.material.color.set(0xff0022);
+      if ('color' in child.material) child.material.color.set(gunColor);
     }
   });
 
