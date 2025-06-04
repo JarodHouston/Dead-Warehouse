@@ -40,6 +40,7 @@ import {
   updateBullets,
   setTargets,
 } from "./src/gun/bulletSystem.js";
+import { handleShot } from "./src/gun/shoot.js";
 
 /* ── boot ──────────────────────────────────────────────────────────────────── */
 const renderer = createRenderer();
@@ -105,6 +106,7 @@ function shoot(e) {
   // shoot(raycaster);
   loadGunSound(listener);
   updateRecoil();
+  handleShot(camera, raycaster, zombieGroup);
   spawnBullet(gun);
 }
 

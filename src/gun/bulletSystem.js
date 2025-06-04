@@ -1,15 +1,15 @@
 import * as THREE from "three";
 
 // --------------------------------- Config ----------------------------------
-const BULLET_SPEED = 75;          // units / second
-const MAX_BULLET_LIFETIME = 3;    // seconds
-const BULLET_SIZE = 0.05;         // visual radius
+const BULLET_SPEED = 75; // units / second
+const MAX_BULLET_LIFETIME = 3; // seconds
+const BULLET_SIZE = 0.05; // visual radius
 
 // --------------------------------- State -----------------------------------
 const raycaster = new THREE.Raycaster();
-const bullets = [];                   // active bullets [{ mesh, spawnTime }]
-let availableTargets = [];            // objects we can hit (Groups or Meshes)
-let mainCamera;                       // set by initBulletSystem()
+const bullets = []; // active bullets [{ mesh, spawnTime }]
+let availableTargets = []; // objects we can hit (Groups or Meshes)
+let mainCamera; // set by initBulletSystem()
 let gameScene;
 
 // --------------------------------- API -------------------------------------
@@ -52,13 +52,18 @@ export function updateBullets(delta) {
     const { mesh } = bulletData;
 
     // Lifetime -------------------------------------------------------------
-    if (performance.now() * 0.001 - bulletData.spawnTime > MAX_BULLET_LIFETIME) {
+    if (
+      performance.now() * 0.001 - bulletData.spawnTime >
+      MAX_BULLET_LIFETIME
+    ) {
       despawnBullet(i);
       continue;
     }
 
     // Travel direction (world space)
-    const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(mesh.quaternion).normalize();
+    const dir = new THREE.Vector3(0, 0, -1)
+      .applyQuaternion(mesh.quaternion)
+      .normalize();
     const dist = BULLET_SPEED * delta;
 
     // Raycast along this frame's path
@@ -67,6 +72,7 @@ export function updateBullets(delta) {
 
     const hits = raycaster.intersectObjects(availableTargets, true);
     if (hits.length) {
+      console.log("ZOMBIE HIT");
       const hit = hits[0];
       const root = findRootTarget(hit.object);
 

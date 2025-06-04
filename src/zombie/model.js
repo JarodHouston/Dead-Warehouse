@@ -196,6 +196,7 @@ export function createZombieModel() {
 
   // 1) HEAD
   const head = createHeadMeshWithUV(skinTexture);
+  head.name = "head";
   head.position.y = 2.5;
 
   // 2) TORSO
