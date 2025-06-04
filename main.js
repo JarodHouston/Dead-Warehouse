@@ -41,6 +41,7 @@ import {
   setTargets,
 } from "./src/gun/bulletSystem.js";
 import { handleShot } from "./src/gun/shoot.js";
+import { addMuzzleFlash, triggerFlash, updateFlash } from "./src/gun/muzzleFlash.js";
 
 /* ── boot ──────────────────────────────────────────────────────────────────── */
 const renderer = createRenderer();
@@ -82,12 +83,22 @@ const playerCollider = createPlayerCollider(spawn);
 // gun
 const gltfLoader = new GLTFLoader();
 let gun;
+let muzzleFlash = null;
 gltfLoader.load("./src/gun/result.gltf", (gltf) => {
   gun = gltf.scene;
-
-  gun.rotation.set(weapRotX, weapRotY, weapRotZ); // e.g. Z-up → Y-up, flip to face forward
+  gun.rotation.set(weapRotX, weapRotY, weapRotZ);
   gun.scale.setScalar(weapScale);
+
+  // gun color set
+  gun.traverse((child) => {
+    if (child.isMesh) {
+      child.material = child.material.clone();
+      if ('color' in child.material) child.material.color.set(0xff0022);
+    }
+  });
+
   weaponAnchor.add(gun);
+  muzzleFlash = addMuzzleFlash(gun);
 });
 
 // renderer.domElement.addEventListener('pointerdown', handlePointerDown);
@@ -108,6 +119,7 @@ function shoot(e) {
   updateRecoil();
   handleShot(camera, raycaster, zombieGroup);
   spawnBullet(gun);
+  if (muzzleFlash) triggerFlash(muzzleFlash);
 }
 
 function requestLock() {
@@ -127,6 +139,11 @@ controls.addEventListener("unlock", () => {
 });
 const zombieGroup = new ZombieGroup(30, wallMatrix, camera.position, scene);
 
+function advanceSystems(delta) {
+  updateBullets(delta);
+  if (muzzleFlash) updateFlash(muzzleFlash, delta);
+}
+
 /* start loop */
 startGameLoop({
   camera,
@@ -141,7 +158,7 @@ startGameLoop({
   updateBullets,
   walkSound,
   sprintSound,
-  onUpdate: updateBullets,
+  onUpdate: advanceSystems,
 });
 
 /* resize */
