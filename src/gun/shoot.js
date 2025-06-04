@@ -42,6 +42,8 @@ export function handleShot(camera, raycaster, zombieGroup) {
     if (currHealth <= 0) {
       score += 50;
       kills += 1;
+      const idx = zombieGroup.zombies.indexOf(zombie);
+      if (idx !== -1) zombieGroup.zombies.splice(idx, 1);
     }
 
     updateScoreUI();

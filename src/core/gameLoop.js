@@ -12,6 +12,10 @@ const normalFOV = 75; // FOV when walking
 
 export let isSprinting = false;
 
+let zombieSpawnTimer = 0;
+let zombie_spawn_interval = 5;
+let spawn_increase_rate = 0.05;
+
 /**
  * Starts the main animation / simulation loop.
  *
@@ -38,8 +42,9 @@ export function startGameLoop({
   worldOctree,
   playerCollider,
   spawnPos,
-  updateRecoil = () => {},
   zombieGroup,
+  updateRecoil = () => {},
+  updateBullets,
   walkSound,
   sprintSound,
   onUpdate = () => {}, // ← NEW: safely defaults to no‑op
@@ -91,11 +96,11 @@ export function startGameLoop({
     // ── Environment lights ---------------------------------------------------
     pointLights.forEach(({ light, bulb }) => {
       const distance = light.position.distanceTo(camera.position);
-      const active = distance <= 25;
+      const active = distance <= 20;
       light.visible = bulb.visible = active;
 
       if (active) {
-        const baseIntensity = 20;
+        const baseIntensity = 15;
         if (Math.random() < 0.002) {
           light.intensity = baseIntensity * (0.5 + Math.random() * 0.5);
         } else if (Math.random() < 0.003) {
@@ -105,6 +110,16 @@ export function startGameLoop({
         }
       }
     });
+
+    // ── Zombie spawn ---------------------------------------------------------
+    zombieSpawnTimer += dt;
+    if (zombieSpawnTimer >= zombie_spawn_interval) {
+      if (spawn_increase_rate > 1) {
+        zombie_spawn_interval -= spawn_increase_rate;
+      }
+      zombieGroup.spawnZombie();
+      zombieSpawnTimer = 0;
+    }
 
     // ── Render ---------------------------------------------------------------
     renderer.render(scene, camera);

@@ -31,3 +31,6 @@ export const weapScale = 0.135;
 export const REST_Z = -0.8; // default offset (matches your original code)
 export const KICK_Z = -0.6; // how far back the weapon jumps (−0.95 ⇒ 15 cm)
 export const RECOVER_MS = 200; // time to return to REST_Z, in milliseconds
+
+// zombie
+export const ZOMBIE_MOVE_RADIUS = 30;

@@ -1,12 +1,12 @@
 // Zombie.js
 import * as THREE from "three";
-import { PLAYER_RADIUS } from "../core/constants.js";
+import { ZOMBIE_MOVE_RADIUS } from "../core/constants.js";
 import { createZombieModel } from "./model.js"; // modular blocky body
 import { getNextStep } from "./pathfinding.js";
 // Zombie.js
 
 export class Zombie {
-  constructor(group, position, playerPosition, scene, speed = 1, health = 100) {
+  constructor(group, position, playerPosition, scene, speed = 4, health = 100) {
     this.id = null;
     this.speed = speed;
     this.health = health;
@@ -87,9 +87,23 @@ export class Zombie {
 
   // }
   animate(elapsed, dt, updatePath) {
-    if (!updatePath && this.isInPlayerRadius(20) && !this.isInPlayerRadius(2)) this._recalcCooldown -= dt;
-    if (updatePath && this.isInPlayerRadius(20) && this._recalcCooldown <= 0 ) {
-      
+    if (!this.isInPlayerRadius(ZOMBIE_MOVE_RADIUS)) {
+      this.visible = false;
+      return;
+    } else {
+      this.visible = true;
+    }
+    if (
+      !updatePath &&
+      this.isInPlayerRadius(ZOMBIE_MOVE_RADIUS) &&
+      !this.isInPlayerRadius(2)
+    )
+      this._recalcCooldown -= dt;
+    if (
+      updatePath &&
+      this.isInPlayerRadius(ZOMBIE_MOVE_RADIUS) &&
+      this._recalcCooldown <= 0
+    ) {
       this.path = this.ZgetNextStep();
       this.pathidx = 0;
       this._recalcCooldown = 0.2;
@@ -100,8 +114,8 @@ export class Zombie {
         };
       }
     }
-  
-    if (this.targetTile  && this.path && this.path[0]) {
+
+    if (this.targetTile && this.path && this.path[0]) {
       const dir = new THREE.Vector3(
         this.targetTile.x - this.position.x,
         0,
@@ -152,7 +166,12 @@ export class Zombie {
           dir.normalize();
           this.position.addScaledVector(dir, this.speed * dt);
         }
-      } else if (!(Math.abs(Math.PI/6 * Math.sin(this.legAngle * Math.PI * 2 * 1) ) < 0.1)) {
+      } else if (
+        !(
+          Math.abs((Math.PI / 6) * Math.sin(this.legAngle * Math.PI * 2 * 1)) <
+          0.1
+        )
+      ) {
         this.animateWalk(dt);
       }
     }
@@ -161,19 +180,19 @@ export class Zombie {
   animateWalk(dt) {
     // 1) Accumulate elapsed time
     this.legAngle += dt;
-  
+
     // 2) Max swing angle = 30° in radians
-    const maxAngle = Math.PI/6;
-  
-    // 3) Pick a speed (cycles per second). 
+    const maxAngle = Math.PI / 6;
+
+    // 3) Pick a speed (cycles per second).
     //    Higher → faster leg swinging.
     const frequency = 1; // e.g. 4 cycles/sec
-  
+
     // 4) Compute a sinusoidal angle in [–30°, +30°]
     const angle = maxAngle * Math.sin(this.legAngle * Math.PI * 2 * frequency);
-  
+
     // // 5) Apply to child 4 and child 5 in opposite phase
-    this.model.children[4].rotation.x =  angle;
+    this.model.children[4].rotation.x = angle;
     this.model.children[5].rotation.x = -angle;
   }
 

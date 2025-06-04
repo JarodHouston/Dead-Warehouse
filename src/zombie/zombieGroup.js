@@ -79,6 +79,7 @@ export class ZombieGroup {
   }
 
   spawnZombie() {
+    console.log("Spawning a zombie...");
     const pos = this._getRandomValidPosition();
 
     if (pos) {
