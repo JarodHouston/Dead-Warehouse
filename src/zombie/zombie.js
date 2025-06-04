@@ -6,9 +6,10 @@ import { getNextStep } from "./pathfinding.js";
 // Zombie.js
 
 export class Zombie {
-  constructor(group, position, /*health,*/ playerPosition, scene, speed = 2.5) {
+  constructor(group, position, playerPosition, scene, speed = 1, health = 100) {
     this.id = null;
     this.speed = speed;
+    this.health = health;
     this.playerPosition = playerPosition;
     this.targetTile = null;
     this.targetDirection = null;
@@ -19,6 +20,15 @@ export class Zombie {
     this.model = createZombieModel(); // External function call to create 3D model
 
     this.scene.add(this.model);
+    this.model.traverse((child) => {
+      if (child.name === "head") {
+        child.userData.zombie = this; // 👈 attach the parent Zombie
+        child.userData.part = "head";
+      } else if (child.isMesh) {
+        child.userData.zombie = this; // attach to other parts too if you want body hits
+        child.userData.part = "body";
+      }
+    });
 
     this.model.position.x = position.x;
     this.model.position.z = position.z;
@@ -191,5 +201,13 @@ export class Zombie {
 
   resetState() {
     // Reset target tile, direction, animations, etc.
+  }
+
+  removeHealth(amt) {
+    this.health -= amt;
+    if (this.health <= 0) {
+      this.remove();
+    }
+    return this.health;
   }
 }
