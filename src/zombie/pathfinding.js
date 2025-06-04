@@ -4,7 +4,7 @@ import * as THREE from "three";
 
 // 1. Precompute the = neighborhood (radius = 3) â†’ 48 offsets
 const NEIGHBORS_RADIUS_3_SQUARE = [];
-const rad = 1;
+const rad = 3;
 for (let dx = -rad; dx <= rad; dx++) {
   for (let dy = -rad; dy <= rad; dy++) {
     if (dx === 0 && dy === 0) continue;
@@ -67,7 +67,7 @@ function isPathClear(fP, tP, r) {
 //    position: {x: float, y: float}
 //    targetTile: {x: int, y: int}
 //    wallMatrix: 2D array of 0/1
-export function getNextStep(position, targetTile, radius = 0.5) {
+export function getNextStep(position, targetTile, radius = 2) {
   const startTile = {
     x: Math.floor(position.x),
     y: Math.floor(position.y),

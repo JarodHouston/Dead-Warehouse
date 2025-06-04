@@ -6,7 +6,7 @@ import { getNextStep } from "./pathfinding.js";
 // Zombie.js
 
 export class Zombie {
-  constructor(group, position, /*health,*/ playerPosition, scene, speed = 1) {
+  constructor(group, position, /*health,*/ playerPosition, scene, speed = 2.5) {
     this.id = null;
     this.speed = speed;
     this.playerPosition = playerPosition;
@@ -22,12 +22,13 @@ export class Zombie {
 
     this.model.position.x = position.x;
     this.model.position.z = position.z;
-
+    this.legAngle = 0;
     this.position = this.model.position;
     this.pathidx = 0;
     this.angle = 0;
     this.currTile = this.getTile();
     this._recalcCooldown = 0;
+    this.walkTime = 0;
   }
 
   getTile() {
@@ -76,11 +77,9 @@ export class Zombie {
 
   // }
   animate(elapsed, dt, updatePath) {
-    //if (!updatePath && this.isInPlayerRadius(20) && !this.isInPlayerRadius(2)) this._recalcCooldown -= dt;
-    if (
-      updatePath &&
-      this.isInPlayerRadius(20) /*&& this._recalcCooldown <= 0*/
-    ) {
+    if (!updatePath && this.isInPlayerRadius(20) && !this.isInPlayerRadius(2)) this._recalcCooldown -= dt;
+    if (updatePath && this.isInPlayerRadius(20) && this._recalcCooldown <= 0 ) {
+      
       this.path = this.ZgetNextStep();
       this.pathidx = 0;
       this._recalcCooldown = 0.2;
@@ -91,8 +90,8 @@ export class Zombie {
         };
       }
     }
-
-    if (this.targetTile && this.path && this.path[0]) {
+  
+    if (this.targetTile  && this.path && this.path[0]) {
       const dir = new THREE.Vector3(
         this.targetTile.x - this.position.x,
         0,
@@ -124,6 +123,7 @@ export class Zombie {
         this.model.rotation.y = desiredYaw;
       }
       if (!this.isInPlayerRadius(2)) {
+        this.animateWalk(dt);
         // Now move forward (same as before)
         if (dir.length() < this.speed * dt) {
           // Snap to the tile, advance path index
@@ -142,12 +142,29 @@ export class Zombie {
           dir.normalize();
           this.position.addScaledVector(dir, this.speed * dt);
         }
+      } else if (!(Math.abs(Math.PI/6 * Math.sin(this.legAngle * Math.PI * 2 * 1) ) < 0.1)) {
+        this.animateWalk(dt);
       }
     }
   }
 
-  animateWalk() {
-    // Animate walking cycle
+  animateWalk(dt) {
+    // 1) Accumulate elapsed time
+    this.legAngle += dt;
+  
+    // 2) Max swing angle = 30° in radians
+    const maxAngle = Math.PI/6;
+  
+    // 3) Pick a speed (cycles per second). 
+    //    Higher → faster leg swinging.
+    const frequency = 1; // e.g. 4 cycles/sec
+  
+    // 4) Compute a sinusoidal angle in [–30°, +30°]
+    const angle = maxAngle * Math.sin(this.legAngle * Math.PI * 2 * frequency);
+  
+    // // 5) Apply to child 4 and child 5 in opposite phase
+    this.model.children[4].rotation.x =  angle;
+    this.model.children[5].rotation.x = -angle;
   }
 
   animateAttack() {
