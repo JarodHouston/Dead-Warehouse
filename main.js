@@ -44,7 +44,7 @@ import { handleShot } from "./src/gun/shoot.js";
 
 /* ── boot ──────────────────────────────────────────────────────────────────── */
 const renderer = createRenderer();
-const { scene, worldOctree } = createScene();
+const { scene, worldOctree } = await createScene();
 
 /* camera + controls */
 const camera = new THREE.PerspectiveCamera(
