@@ -201,6 +201,7 @@ export function createZombieModel() {
 
   // 2) TORSO
   const torso = createTorsoMesh(skinTexture);
+  torso.name = "torso";
   torso.position.y = 1.25;
 
   // 3) LEFT ARM
