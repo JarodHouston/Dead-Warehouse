@@ -258,11 +258,11 @@ function makeSixMaterials(
 ) {
   return [
     new THREE.MeshStandardMaterial({ map: rightTex }), // +X
-    new THREE.MeshStandardMaterial({ map: leftTex  }), // -X
-    new THREE.MeshStandardMaterial({ map: topTex   }), // +Y
-    new THREE.MeshStandardMaterial({ map: bottomTex}), // -Y
+    new THREE.MeshStandardMaterial({ map: leftTex }), // -X
+    new THREE.MeshStandardMaterial({ map: topTex }), // +Y
+    new THREE.MeshStandardMaterial({ map: bottomTex }), // -Y
     new THREE.MeshStandardMaterial({ map: frontTex }), // +Z
-    new THREE.MeshStandardMaterial({ map: backTex  }), // -Z
+    new THREE.MeshStandardMaterial({ map: backTex }), // -Z
   ];
 }
 
@@ -377,6 +377,8 @@ export function createZombieModel() {
   // HEAD & TORSO
   const head = createHeadMesh();
   const torso = createTorsoMesh();
+  head.name = "head";
+  torso.name = "torso";
   torso.position.set(0, 2.25, 0);
   head.position.set(0, 3.5, 0);
 

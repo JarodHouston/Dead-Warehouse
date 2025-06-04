@@ -50,7 +50,7 @@ export function handleShot(camera, raycaster, zombieGroup) {
     console.log("Zombie health: ", currHealth);
 
     // Optional: Mark it, reduce health, remove it, etc.
-    hit.material.color.set("red"); // for example
+    // hit.material.color.set("red"); // for example
   }
 }
 
