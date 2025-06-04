@@ -1,11 +1,14 @@
 import * as THREE from "three";
 import { loadWallMatrix, createWallTile } from "./warehouse-wall";
-import { createShelfTile } from "./warehouse-shelf";
+import { createShelfTile, createBoxTile } from "./warehouse-shelf";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+
+let debugCounter = 0;
 
 export const TILE_SIZE = 1;
 const WALL_HEIGHT = 4;
 const SHELF_HEIGHT = 2;
+const BOX_HEIGHT = 0.5;
 
 async function getWallMatrix() {
   return await loadWallMatrix();
@@ -20,7 +23,7 @@ const loader = new GLTFLoader();
 let shelvesModel = null;
 let shelvesModelTemplate = null;
 
-export function warehouse(scene, floorSize) {
+export async function warehouse(scene, floorSize) {
   const warehouse = new THREE.Group();
 
   /* ─────────────────────────────────── FLOOR ──────────────────────────────────── */
@@ -43,6 +46,17 @@ export function warehouse(scene, floorSize) {
   scene.add(floorMesh);
 
   /* ─────────────────────────────────── WALLS ──────────────────────────────────── */
+
+  if (!shelvesModelTemplate) {
+    shelvesModelTemplate = await new Promise((resolve, reject) => {
+      loader.load(
+        "assets/models/psx_storage_shelves__cardboard_boxs.glb",
+        (gltf) => resolve(gltf.scene),
+        undefined,
+        reject
+      );
+    });
+  }
 
   for (let row = 0; row < wallMatrix.length; row++) {
     for (let col = 0; col < wallMatrix[row].length; col++) {
@@ -73,52 +87,91 @@ export function warehouse(scene, floorSize) {
 
         pointLights.push({ light, bulb });
         warehouse.add(bulb);
+        // } else if (wallMatrix[row][col] === -1) {
+        //   debugCounter += 1;
+        //   const shelfWall = createShelfTile(TILE_SIZE, SHELF_HEIGHT);
+        //   shelfWall.position.set(
+        //     col * TILE_SIZE,
+        //     SHELF_HEIGHT / 4,
+        //     row * TILE_SIZE
+        //   );
+        //   warehouse.add(shelfWall);
+        //   console.log(debugCounter);
       } else if (wallMatrix[row][col] === 3) {
-        const shelfWall = createShelfTile(TILE_SIZE, SHELF_HEIGHT);
-        shelfWall.position.set(col * TILE_SIZE, SHELF_HEIGHT / 4, row * TILE_SIZE);
-        warehouse.add(shelfWall);
-
+        let shelfWall = null;
+        let boxWall = null;
         const placeShelf = (modelInstance) => {
           modelInstance.scale.set(1, 1, 1); // Adjust scale if needed
           modelInstance.rotation.y = 0; // Default rotation
-
+          shelfWall = createShelfTile(TILE_SIZE, SHELF_HEIGHT, "horizontal");
+          boxWall = createBoxTile(TILE_SIZE, BOX_HEIGHT, "horizontal");
+          boxWall.position.set(
+            col * TILE_SIZE,
+            SHELF_HEIGHT / 4,
+            (row + 1) * TILE_SIZE
+          );
           // Boundary-safe rotation logic (as described above)
-          if (col > 0 && wallMatrix[row][col - 1] !== undefined && wallMatrix[row][col - 1] !== -1) {
-              modelInstance.rotation.y = Math.PI / 2;
-          } else if (row + 1 < wallMatrix.length && wallMatrix[row + 1] !== undefined && wallMatrix[row + 1][col] !== undefined && wallMatrix[row + 1][col] !== -1) {
-              modelInstance.rotation.y = Math.PI;
-          } else if (col + 1 < wallMatrix[row].length && wallMatrix[row][col + 1] !== undefined && wallMatrix[row][col + 1] !== -1) {
-              modelInstance.rotation.y = -Math.PI / 2;
+          if (
+            col > 0 &&
+            wallMatrix[row][col - 1] !== undefined &&
+            wallMatrix[row][col - 1] !== -1
+          ) {
+            modelInstance.rotation.y = Math.PI / 2;
+            shelfWall = createShelfTile(TILE_SIZE, SHELF_HEIGHT, "vertical");
+            boxWall = createBoxTile(TILE_SIZE, BOX_HEIGHT, "vertical");
+            boxWall.position.set(
+              (col + 1) * TILE_SIZE,
+              SHELF_HEIGHT / 4,
+              row * TILE_SIZE
+            );
+          } else if (
+            row + 1 < wallMatrix.length &&
+            wallMatrix[row + 1] !== undefined &&
+            wallMatrix[row + 1][col] !== undefined &&
+            wallMatrix[row + 1][col] !== -1
+          ) {
+            modelInstance.rotation.y = Math.PI;
+            shelfWall = createShelfTile(TILE_SIZE, SHELF_HEIGHT, "horizontal");
+            boxWall = createBoxTile(TILE_SIZE, BOX_HEIGHT, "horizontal");
+            boxWall.position.set(
+              col * TILE_SIZE,
+              SHELF_HEIGHT / 4,
+              (row - 1) * TILE_SIZE
+            );
+          } else if (
+            col + 1 < wallMatrix[row].length &&
+            wallMatrix[row][col + 1] !== undefined &&
+            wallMatrix[row][col + 1] !== -1
+          ) {
+            modelInstance.rotation.y = -Math.PI / 2;
+            shelfWall = createShelfTile(TILE_SIZE, SHELF_HEIGHT, "vertical");
+            boxWall = createBoxTile(TILE_SIZE, BOX_HEIGHT, "vertical");
+            boxWall.position.set(
+              (col - 1) * TILE_SIZE,
+              SHELF_HEIGHT / 4,
+              row * TILE_SIZE
+            );
           }
-
           modelInstance.position.set(col * TILE_SIZE, 0, row * TILE_SIZE);
           scene.add(modelInstance);
         };
-
         if (!shelvesModelTemplate) {
-          loader.load(
-            "assets/models/psx_storage_shelves__cardboard_boxs.glb",
-            (gltf) => {
-              shelvesModelTemplate = gltf.scene; // Store the loaded model as a template
-              const newShelves = shelvesModelTemplate.clone(); // Clone for this instance
-              placeShelf(newShelves);
-            },
-            undefined,
-            (error) => {
-              console.error("Error loading model:", error);
-            }
-          );
+          console.log("Error loading shelf");
         } else {
           // If template is already loaded, just clone it
           const newShelves = shelvesModelTemplate.clone();
           placeShelf(newShelves);
         }
-      } 
-      // else if (wallMatrix[row][col] === -1) {
-      //     const shelfWall = createShelfTile(TILE_SIZE, SHELF_HEIGHT);
-      //     shelfWall.position.set(col * TILE_SIZE, SHELF_HEIGHT / 4, row * TILE_SIZE);
-      //     warehouse.add(shelfWall);
-      // }
+        if (shelfWall) {
+          shelfWall.position.set(
+            col * TILE_SIZE,
+            SHELF_HEIGHT / 4,
+            row * TILE_SIZE
+          );
+          warehouse.add(shelfWall);
+        }
+        warehouse.add(boxWall);
+      }
     }
   }
 

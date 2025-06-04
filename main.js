@@ -43,7 +43,7 @@ import {
 
 /* ── boot ──────────────────────────────────────────────────────────────────── */
 const renderer = createRenderer();
-const { scene, worldOctree } = createScene();
+const { scene, worldOctree } = await createScene();
 
 /* camera + controls */
 const camera = new THREE.PerspectiveCamera(
@@ -161,7 +161,7 @@ startGameLoop({
   updateBullets,
   walkSound,
   sprintSound,
-  onUpdate:updateBullets,
+  onUpdate: updateBullets,
 });
 
 /* resize */

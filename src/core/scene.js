@@ -3,7 +3,7 @@ import { Octree } from "three/examples/jsm/math/Octree.js";
 import { warehouse } from "../warehouse/warehouse.js";
 import { TERRAIN_SIZE, WAREHOUSE_SIZE, PLAYER_RADIUS } from "./constants.js";
 
-export function createScene() {
+export async function createScene() {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x110124);
 
@@ -27,7 +27,7 @@ export function createScene() {
   /* warehouse (prefab or fallback) */
   let warehouseObj;
   try {
-    warehouseObj = warehouse(scene, WAREHOUSE_SIZE);
+    warehouseObj = await warehouse(scene, WAREHOUSE_SIZE);
   } catch (e) {
     console.warn("warehouse() prefab missing – using placeholder cube", e);
     warehouseObj = new THREE.Mesh(
