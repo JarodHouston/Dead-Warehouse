@@ -33,7 +33,8 @@ export const KICK_Z = -0.6; // how far back the weapon jumps (−0.95 ⇒ 15 cm)
 export const RECOVER_MS = 200; // time to return to REST_Z, in milliseconds
 
 // gun color
-export const gunColor = 0xff0022;
+export const gunColor = 0x787878;
 
 // zombie
 export const ZOMBIE_MOVE_RADIUS = 30;
+export const ZOMBIE_SPAWN_RADIUS = 15;

@@ -75,8 +75,9 @@ camera.add(weaponAnchor);
 weaponAnchor.position.set(weapAncPosX, weapAncPosY, weapAncPosZ);
 
 const START_X = WAREHOUSE_SIZE / 2 - 1.5;
-const START_Z = -5;
+const START_Z = 5;
 const spawn = new THREE.Vector3(START_X, PLAYER_HEIGHT, START_Z);
+camera.rotateY(Math.PI);
 camera.position.copy(spawn);
 
 const controls = createControls(camera, renderer.domElement);
@@ -150,7 +151,6 @@ const zombieGroup = new ZombieGroup(
   wallMatrix,
   camera.position,
   scene,
-  0.5,
   baseZombieModel
 );
 

@@ -1,19 +1,12 @@
 import * as THREE from "three";
+import { ZOMBIE_SPAWN_RADIUS } from "../core/constants";
 import { Zombie } from "./zombie";
 
 export class ZombieGroup {
-  constructor(
-    numZombies,
-    wallMatrix,
-    playerPosition,
-    scene,
-    radius = 0.5,
-    baseZombieModel
-  ) {
+  constructor(numZombies, wallMatrix, playerPosition, scene, baseZombieModel) {
     this.scene = scene;
     this.wallMatrix = wallMatrix;
     this.playerPosition = playerPosition;
-    this.radius = radius;
     this.zombies = [];
     this.baseZombieModel = baseZombieModel;
     this.playerTile = {
@@ -52,7 +45,7 @@ export class ZombieGroup {
   isTooCloseToPlayer(x, y) {
     const dx = x - this.playerPosition.x;
     const dy = y - this.playerPosition.y;
-    return Math.sqrt(dx * dx + dy * dy) < this.radius;
+    return Math.sqrt(dx * dx + dy * dy) < ZOMBIE_SPAWN_RADIUS;
   }
 
   isWall(x, y) {
