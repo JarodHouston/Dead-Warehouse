@@ -3,8 +3,6 @@ import { loadWallMatrix, createWallTile } from "./warehouse-wall";
 import { createShelfTile, createBoxTile } from "./warehouse-shelf";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-let debugCounter = 0;
-
 export const TILE_SIZE = 1;
 const WALL_HEIGHT = 4;
 const SHELF_HEIGHT = 2;
@@ -16,7 +14,7 @@ async function getWallMatrix() {
 
 export const wallMatrix = await getWallMatrix();
 // console.log(wallMatrix);
-export const meshMatrix = wallMatrix.map(row => row.map(() => null));
+export const meshMatrix = wallMatrix.map((row) => row.map(() => null));
 
 export const pointLights = [];
 
@@ -41,7 +39,7 @@ export async function warehouse(scene, floorSize) {
   });
   const floorGeometry = new THREE.PlaneGeometry(floorSize, floorSize);
   const floorMesh = new THREE.Mesh(floorGeometry, floorMaterial);
-  
+
   floorMesh.rotation.x = -Math.PI / 2;
   floorMesh.position.set(50, 0, 50);
   scene.add(floorMesh);

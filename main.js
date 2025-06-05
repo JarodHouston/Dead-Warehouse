@@ -125,7 +125,7 @@ controls.addEventListener("lock", () => {
 controls.addEventListener("unlock", () => {
   document.removeEventListener("mousedown", shoot);
 });
-const zombieGroup = new ZombieGroup(30, wallMatrix, camera.position, scene);
+const zombieGroup = new ZombieGroup(20, wallMatrix, camera.position, scene);
 
 /* start loop */
 startGameLoop({
