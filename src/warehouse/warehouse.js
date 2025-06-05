@@ -67,7 +67,7 @@ export async function warehouse(scene, floorSize) {
         meshMatrix[row][col] = wall;
       } else if (wallMatrix[row][col] === 2) {
         // Create a hanging point light
-        const light = new THREE.PointLight(0xffffff, 10, 40);
+        const light = new THREE.PointLight(0xffffff, 12, 40);
         const lightX = col * TILE_SIZE + TILE_SIZE / 2;
         const lightY = WALL_HEIGHT - 0.75; // slightly below ceiling
         const lightZ = row * TILE_SIZE + TILE_SIZE / 2;
