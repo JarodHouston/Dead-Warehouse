@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 /* Creating Invisible Wall Mesh for Shelves for Collision */
-const shelfMaterial = new THREE.MeshBasicMaterial({
+export const shelfMaterial = new THREE.MeshBasicMaterial({
   // any color is fine; it will be invisible
   color: 0xffffff,
   transparent: true, // allow alpha < 1.0

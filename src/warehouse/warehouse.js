@@ -1,12 +1,23 @@
 import * as THREE from "three";
 import { loadWallMatrix, createWallTile } from "./warehouse-wall";
-import { createShelfTile, createBoxTile } from "./warehouse-shelf";
+import {
+  createShelfTile,
+  createBoxTile,
+  shelfMaterial,
+} from "./warehouse-shelf";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 export const TILE_SIZE = 1;
 const WALL_HEIGHT = 4;
 const SHELF_HEIGHT = 2;
 const BOX_HEIGHT = 0.5;
+
+const invisibleGeometry = new THREE.BoxGeometry(
+  TILE_SIZE,
+  SHELF_HEIGHT,
+  TILE_SIZE
+);
+const invisibleMaterial = new THREE.MeshBasicMaterial({ visible: true });
 
 async function getWallMatrix() {
   return await loadWallMatrix();
@@ -88,16 +99,12 @@ export async function warehouse(scene, floorSize) {
 
         pointLights.push({ light, bulb });
         warehouse.add(bulb);
-        // } else if (wallMatrix[row][col] === -1) {
-        //   debugCounter += 1;
-        //   const shelfWall = createShelfTile(TILE_SIZE, SHELF_HEIGHT);
-        //   shelfWall.position.set(
-        //     col * TILE_SIZE,
-        //     SHELF_HEIGHT / 4,
-        //     row * TILE_SIZE
-        //   );
-        //   warehouse.add(shelfWall);
-        //   console.log(debugCounter);
+      } else if (wallMatrix[row][col] === -1) {
+        const wall = new THREE.Mesh(invisibleGeometry, shelfMaterial);
+        wall.visible = false; // Important: mesh must be hidden, not material
+        wall.position.set(col * TILE_SIZE, SHELF_HEIGHT / 4, row * TILE_SIZE);
+        meshMatrix[row][col] = wall;
+        scene.add(wall);
       } else if (wallMatrix[row][col] === 3) {
         let shelfWall = null;
         let boxWall = null;
