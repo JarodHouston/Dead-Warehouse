@@ -24,7 +24,7 @@ export class Zombie {
     //this.health = health;
     this.scene = scene;
     this.group = group;
-
+    this.attackTimer = 0;
     this.model = baseZombieModel.clone(true);
 
     this.scene.add(this.model);
@@ -95,6 +95,7 @@ export class Zombie {
 
   // }
   animate(elapsed, dt, updatePath) {
+    
     if (!this.isInPlayerRadius(ZOMBIE_MOVE_RADIUS)) {
       this.visible = false;
       return;
@@ -154,6 +155,7 @@ export class Zombie {
         // If already within ε, snap exactly to desiredYaw and stop turning
         this.model.rotation.y = desiredYaw;
       }
+      this.animateAttack(dt,this.isInPlayerRadius(2));
       if (!this.isInPlayerRadius(2)) {
         this.animateWalk(dt);
         // Now move forward (same as before)
@@ -174,7 +176,8 @@ export class Zombie {
           dir.normalize();
           this.position.addScaledVector(dir, this.speed * dt);
         }
-      } else if (
+      }
+      if (
         !(
           Math.abs((Math.PI / 6) * Math.sin(this.legAngle * Math.PI * 2 * 1)) <
           0.1
@@ -182,6 +185,7 @@ export class Zombie {
       ) {
         this.animateWalk(dt);
       }
+
     }
   }
 
@@ -204,9 +208,55 @@ export class Zombie {
     this.model.children[5].rotation.x = -angle;
   }
 
-  animateAttack() {
-    // Animate attack cycle
+  // In your constructor, add something like:
+//   this.attackTimer = 0;
+//   this.damagePerHit = 10;
+//   this.player = playerObject; // or however you store a reference to the player
+
+animateAttack(dt, inRange) {
+  const cyclePeriod = 0.6;       // same as before
+  const riseFrac    = 0.7;
+  const fallFrac    = 1 - riseFrac;
+  const maxArmAngle = Math.PI / 3;
+
+  // 1) Remember the old timer before advancing
+  const oldTimer = this.attackTimer;
+
+  // 2) Advance the timer
+
+
+  // 3) Check for wrap‐around: if oldPhase > newPhase, we just finished a cycle
+
+
+  // 4) Now compute the arm angle exactly as before
+  const t = newPhase; // (or equivalently (this.attackTimer % cyclePeriod))
+  const riseTime = riseFrac * cyclePeriod;
+  const fallTime = fallFrac * cyclePeriod;
+
+  let armAngle;
+  if (t < riseTime) {
+    armAngle = maxArmAngle * (t / riseTime);
+  } else {
+    const tFall = t - riseTime;
+    armAngle = maxArmAngle * (1 - (tFall / fallTime));
   }
+
+  // 5) Only rotate the arms (children[2] & [3]) if either they're mid‐swing
+  //    (armAngle > small threshold) OR we’re in‐range (so that they stay “up” when close).
+  if (armAngle > 0.1 || inRange) {
+    // Adjust these rotation values to match your model’s “attack pose.”
+    this.model.children[2].rotation.x = -armAngle - Math.PI / 2;
+    this.model.children[3].rotation.x = -armAngle - Math.PI / 2;
+    this.attackTimer += dt;
+  }
+  const oldPhase = oldTimer % cyclePeriod;
+  const newPhase = this.attackTimer % cyclePeriod;
+  if (oldPhase > newPhase && inRange) {
+    // This means we crossed the cycle boundary in this frame → deal damage
+    console.log("damage");
+  }
+}
+
 
   isInPlayerRadius(radius = 3) {
     const dx = this.position.x - this.playerPosition.x;
