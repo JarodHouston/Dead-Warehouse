@@ -277,10 +277,7 @@ function createHeadMesh() {
     texBack_h
   );
   const geo = new THREE.BoxGeometry(1, 1, 1);
-  let new_mesh = new THREE.Mesh(geo, headMats);
-  // new_mesh.castShadow = true;
-  // new_mesh.receiveShadow = true;
-  return new_mesh;
+  return new THREE.Mesh(geo, headMats);
 }
 
 // ─── 8. CREATE TORSO MESH ───────────────────────────────────
@@ -396,6 +393,13 @@ export function createZombieModel() {
 
   // Scale down uniformly
   character.scale.set(0.5, 0.5, 0.5);
+
+  character.traverse((child) => {
+    if (child.isMesh) {
+      child.castShadow = true;
+      child.receiveShadow = true;
+    }
+  });
 
   return character;
 }

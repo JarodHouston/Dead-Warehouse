@@ -99,12 +99,11 @@ export function startGameLoop({
       const active = distance <= 20;
       light.visible = bulb.visible = active;
 
-      // light.castShadow = true;
-      // light.shadow.mapSize.set(512, 512);
-      // light.shadow.bias = -0.005;
-
       if (active) {
-        const baseIntensity = 15;
+        const baseIntensity = 10;
+        // light.castShadow = true;
+        // light.shadow.mapSize.set(128, 128);
+        // light.shadow.bias = -0.005;
         if (Math.random() < 0.002) {
           light.intensity = baseIntensity * (0.5 + Math.random() * 0.5);
         } else if (Math.random() < 0.003) {
@@ -113,6 +112,22 @@ export function startGameLoop({
           light.intensity = baseIntensity + (Math.random() * 0.2 - 0.1);
         }
       }
+    });
+
+    const activeLights = pointLights
+      .map(({ light, bulb }) => ({
+        light,
+        bulb,
+        distance: light.position.distanceTo(camera.position),
+      }))
+      .filter((l) => l.distance <= 20)
+      .sort((a, b) => a.distance - b.distance);
+
+    // Only allow 1 or 2 lights to cast shadows
+    activeLights.forEach((entry, i) => {
+      const shouldCastShadow = i < 1; // only the nearest light
+      entry.light.castShadow = shouldCastShadow;
+      entry.light.visible = entry.bulb.visible = true;
     });
 
     // ── Zombie spawn ---------------------------------------------------------

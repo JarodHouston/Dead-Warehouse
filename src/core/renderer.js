@@ -6,8 +6,8 @@ export function createRenderer() {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, pixel_ratio));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.outputEncoding = THREE.sRGBEncoding;
-  renderer.shadowMap.enabled = false;
-  // renderer.shadowMap.type = THREE.BasicShadowMap;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.BasicShadowMap;
   document.body.appendChild(renderer.domElement);
   return renderer;
 }
