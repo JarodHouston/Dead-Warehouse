@@ -9,7 +9,7 @@ export function handleShot(camera, raycaster, zombieGroup) {
   );
   raycaster.set(camera.position, dir);
 
-  // ONLY CHECKS ZOMBIE OBJECTS (should do raycast considering ALL environment objects)
+  // ONLY CHECKS ZOMBIE OBJECTS (should do raycast considering wall objects too)
   const intersects = raycaster.intersectObjects(
     zombieGroup.zombies.map((z) => z.model),
     true

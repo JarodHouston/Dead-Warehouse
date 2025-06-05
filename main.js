@@ -25,6 +25,7 @@ import {
   loadSprintSound,
   loadGunSound,
 } from "./src/core/audio.js";
+import { createZombieModel } from "./src/zombie/model.js";
 
 import { ZombieGroup } from "./src/zombie/zombieGroup";
 import { wallMatrix, TILE_SIZE } from "./src/warehouse/warehouse.js";
@@ -42,7 +43,11 @@ import {
   setTargets,
 } from "./src/gun/bulletSystem.js";
 import { handleShot } from "./src/gun/shoot.js";
-import { addMuzzleFlash, triggerFlash, updateFlash } from "./src/gun/muzzleFlash.js";
+import {
+  addMuzzleFlash,
+  triggerFlash,
+  updateFlash,
+} from "./src/gun/muzzleFlash.js";
 
 /* ── boot ──────────────────────────────────────────────────────────────────── */
 const renderer = createRenderer();
@@ -94,7 +99,7 @@ gltfLoader.load("./src/gun/result.gltf", (gltf) => {
   gun.traverse((child) => {
     if (child.isMesh) {
       child.material = child.material.clone();
-      if ('color' in child.material) child.material.color.set(gunColor);
+      if ("color" in child.material) child.material.color.set(gunColor);
     }
   });
 
@@ -138,7 +143,16 @@ controls.addEventListener("lock", () => {
 controls.addEventListener("unlock", () => {
   document.removeEventListener("mousedown", shoot);
 });
-const zombieGroup = new ZombieGroup(20, wallMatrix, camera.position, scene);
+
+const baseZombieModel = createZombieModel();
+const zombieGroup = new ZombieGroup(
+  30,
+  wallMatrix,
+  camera.position,
+  scene,
+  0.5,
+  baseZombieModel
+);
 
 function advanceSystems(delta) {
   updateBullets(delta);

@@ -99,6 +99,10 @@ export function startGameLoop({
       const active = distance <= 20;
       light.visible = bulb.visible = active;
 
+      // light.castShadow = true;
+      // light.shadow.mapSize.set(512, 512);
+      // light.shadow.bias = -0.005;
+
       if (active) {
         const baseIntensity = 15;
         if (Math.random() < 0.002) {

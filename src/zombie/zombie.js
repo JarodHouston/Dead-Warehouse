@@ -6,7 +6,15 @@ import { getNextStep } from "./pathfinding.js";
 // Zombie.js
 
 export class Zombie {
-  constructor(group, position, playerPosition, scene, speed = 4, health = 100) {
+  constructor(
+    group,
+    position,
+    playerPosition,
+    scene,
+    baseZombieModel,
+    speed = 4,
+    health = 100
+  ) {
     this.id = null;
     this.speed = speed;
     this.health = health;
@@ -17,7 +25,7 @@ export class Zombie {
     this.scene = scene;
     this.group = group;
 
-    this.model = createZombieModel(); // External function call to create 3D model
+    this.model = baseZombieModel.clone(true);
 
     this.scene.add(this.model);
     this.model.traverse((child) => {

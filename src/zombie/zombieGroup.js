@@ -1,14 +1,21 @@
 import * as THREE from "three";
 import { Zombie } from "./zombie";
-import { createZombieModel } from "./model";
 
 export class ZombieGroup {
-  constructor(numZombies, wallMatrix, playerPosition, scene, radius = 0.5) {
+  constructor(
+    numZombies,
+    wallMatrix,
+    playerPosition,
+    scene,
+    radius = 0.5,
+    baseZombieModel
+  ) {
     this.scene = scene;
     this.wallMatrix = wallMatrix;
     this.playerPosition = playerPosition;
     this.radius = radius;
     this.zombies = [];
+    this.baseZombieModel = baseZombieModel;
     this.playerTile = {
       x: Math.floor(this.playerPosition.x),
       y: Math.floor(this.playerPosition.z),
@@ -83,15 +90,21 @@ export class ZombieGroup {
     const pos = this._getRandomValidPosition();
 
     if (pos) {
-      const x = this._createZombieAt(pos);
+      const x = this._createZombieAt(pos, this.baseZombieModel);
 
       this.zombies.push(x);
     }
   }
 
-  _createZombieAt(position) {
+  _createZombieAt(position, baseZombieModel) {
     const pen = new THREE.Vector3(position.x, 0, position.y);
     //const pen = new THREE.Vector3(20, 0, 20);
-    return new Zombie(this, pen, this.playerPosition, this.scene); // Replace with actual zombie instance creation
+    return new Zombie(
+      this,
+      pen,
+      this.playerPosition,
+      this.scene,
+      this.baseZombieModel
+    ); // Replace with actual zombie instance creation
   }
 }

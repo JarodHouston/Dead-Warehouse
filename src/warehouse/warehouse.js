@@ -39,6 +39,7 @@ export async function warehouse(scene, floorSize) {
   });
   const floorGeometry = new THREE.PlaneGeometry(floorSize, floorSize);
   const floorMesh = new THREE.Mesh(floorGeometry, floorMaterial);
+  // floorMesh.receiveShadow = true;
 
   floorMesh.rotation.x = -Math.PI / 2;
   floorMesh.position.set(50, 0, 50);
@@ -105,6 +106,7 @@ export async function warehouse(scene, floorSize) {
           modelInstance.rotation.y = 0; // Default rotation
           shelfWall = createShelfTile(TILE_SIZE, SHELF_HEIGHT, "horizontal");
           boxWall = createBoxTile(TILE_SIZE, BOX_HEIGHT, "horizontal");
+          // add to mesh matrix, but not here
           boxWall.position.set(
             col * TILE_SIZE,
             SHELF_HEIGHT / 4,

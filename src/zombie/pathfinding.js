@@ -4,7 +4,7 @@ import * as THREE from "three";
 
 // 1. Precompute the = neighborhood (radius = 3) â†’ 48 offsets
 const NEIGHBORS_RADIUS_3_SQUARE = [];
-const rad = 3;
+const rad = 1;
 for (let dx = -rad; dx <= rad; dx++) {
   for (let dy = -rad; dy <= rad; dy++) {
     if (dx === 0 && dy === 0) continue;
