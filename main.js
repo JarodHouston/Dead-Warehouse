@@ -4,6 +4,7 @@ import {
   DEV_MODE,
   WAREHOUSE_SIZE,
   PLAYER_HEIGHT,
+  PLAYER_RADIUS,
   weapAncPosX,
   weapAncPosY,
   weapAncPosZ,
@@ -18,6 +19,7 @@ import { createRenderer } from "./src/core/renderer.js";
 import { createScene } from "./src/core/scene.js";
 import { createControls } from "./src/core/controls.js";
 import { createPlayerCollider } from "./src/player/player.js";
+import { createDeathSystem } from "./src/player/playerDeath.js";
 import { startGameLoop } from "./src/core/gameLoop.js";
 import {
   playBackgroundMusic,
@@ -108,16 +110,6 @@ gltfLoader.load("./src/gun/result.gltf", (gltf) => {
   muzzleFlash = addMuzzleFlash(gun);
 });
 
-// renderer.domElement.addEventListener('pointerdown', handlePointerDown);
-document.addEventListener("mousedown", (e) => {
-  if (e.button !== 0) return; // only left button
-  handlePointerDown(e);
-});
-
-renderer.domElement.addEventListener("click", (e) => {
-  if (!controls.isLocked) controls.lock(); // first click → lock cursor
-});
-
 const raycaster = new THREE.Raycaster();
 function shoot(e) {
   if (e.button !== 0) return;
@@ -129,7 +121,49 @@ function shoot(e) {
   if (muzzleFlash) triggerFlash(muzzleFlash);
 }
 
+const baseZombieModel = createZombieModel();
+const zombieGroup = new ZombieGroup(
+  30,
+  wallMatrix,
+  camera.position,
+  scene,
+  baseZombieModel
+);
+
+export const deathSystem = createDeathSystem({
+  camera,
+  spawn,
+  playerCollider,
+  PLAYER_RADIUS,
+  PLAYER_HEIGHT,
+  controls,
+  walkSound,
+  sprintSound,
+  shoot,
+  zombieGroup,
+});
+
+// renderer.domElement.addEventListener('pointerdown', handlePointerDown);
+document.addEventListener("mousedown", (e) => {
+  if (e.button !== 0) return; // only left button
+  if (deathSystem.isDead()) {
+    e.preventDefault();
+    deathSystem.respawnPlayer();
+    return;
+  }
+  if (!deathSystem.isDead()) handlePointerDown(e);
+});
+
+renderer.domElement.addEventListener("click", (e) => {
+  if (!controls.isLocked) controls.lock(); // first click → lock cursor
+});
+
+// window.addEventListener("keydown", (e) => {
+//   if (e.code === "Digit9") deathSystem.killPlayer();
+// });
+
 function requestLock() {
+  if (deathSystem.isDead()) return; // don’t re-lock while dead
   controls.lock();
 }
 
@@ -145,16 +179,8 @@ controls.addEventListener("unlock", () => {
   document.removeEventListener("mousedown", shoot);
 });
 
-const baseZombieModel = createZombieModel();
-const zombieGroup = new ZombieGroup(
-  30,
-  wallMatrix,
-  camera.position,
-  scene,
-  baseZombieModel
-);
-
 function advanceSystems(delta) {
+  if (deathSystem.isDead()) return;
   updateBullets(delta);
   if (muzzleFlash) updateFlash(muzzleFlash, delta);
 }

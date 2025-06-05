@@ -8,7 +8,7 @@ import { createZombieModel } from "./model.js"; // modular blocky body
 import { getNextStep } from "./pathfinding.js";
 // Zombie.js
 
-let playerHealth = INITIAL_PLAYER_HEALTH;
+export let playerHealth = INITIAL_PLAYER_HEALTH;
 
 export class Zombie {
   constructor(

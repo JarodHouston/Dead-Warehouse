@@ -4,7 +4,9 @@ import { SUBSTEPS } from "./constants.js";
 import { getKeys } from "./input.js";
 import { handleInput, playerPhysics } from "./physics.js";
 import { pointLights } from "../warehouse/warehouse.js";
+import { playerHealth } from "../zombie/zombie.js";
 import { updateRecoil as updateGunRecoil } from "../gun/gun.js";
+import { deathSystem } from "../../main.js";
 
 let targetFOV = 75; // default FOV
 const sprintFOV = 90; // FOV when sprinting
@@ -58,6 +60,10 @@ export function startGameLoop({
 
   function animate() {
     requestAnimationFrame(animate);
+
+    if (playerHealth <= 0) {
+      deathSystem.killPlayer();
+    }
 
     const dt = clock.getDelta();
     const step = Math.min(0.05, dt) / SUBSTEPS;
