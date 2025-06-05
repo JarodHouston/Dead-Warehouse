@@ -16,6 +16,7 @@ export class ZombieGroup {
     this.radius = radius;
     this.zombies = [];
     this.baseZombieModel = baseZombieModel;
+    this.active = true;
     this.playerTile = {
       x: Math.floor(this.playerPosition.x),
       y: Math.floor(this.playerPosition.z),
@@ -25,7 +26,18 @@ export class ZombieGroup {
       this.spawnZombie();
     }
   }
+
+  /** Pause / un-pause the whole horde and hide or show them. */
+  setActive(flag) {
+    this.active = flag;
+    this.zombies.forEach((z) => {
+      // each Zombie exposes its root object3D – adjust if your class differs
+      z.object.visible = flag;
+    });
+  }
+
   animate(elapsed, dt) {
+    if (!this.active) return;
     // const damage = 0;
     const tileChange = this.updatePlayerTile();
     // const cell = wallMatrix[this.playerTile.y]?.[this.playerTile.x];
