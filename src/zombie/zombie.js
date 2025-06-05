@@ -1,9 +1,14 @@
 // Zombie.js
 import * as THREE from "three";
-import { ZOMBIE_MOVE_RADIUS } from "../core/constants.js";
+import {
+  ZOMBIE_MOVE_RADIUS,
+  INITIAL_PLAYER_HEALTH,
+} from "../core/constants.js";
 import { createZombieModel } from "./model.js"; // modular blocky body
 import { getNextStep } from "./pathfinding.js";
 // Zombie.js
+
+let playerHealth = INITIAL_PLAYER_HEALTH;
 
 export class Zombie {
   constructor(
@@ -95,7 +100,6 @@ export class Zombie {
 
   // }
   animate(elapsed, dt, updatePath) {
-    
     if (!this.isInPlayerRadius(ZOMBIE_MOVE_RADIUS)) {
       this.visible = false;
       return;
@@ -155,7 +159,7 @@ export class Zombie {
         // If already within ε, snap exactly to desiredYaw and stop turning
         this.model.rotation.y = desiredYaw;
       }
-      this.animateAttack(dt,this.isInPlayerRadius(2));
+      this.animateAttack(dt, this.isInPlayerRadius(2));
       if (!this.isInPlayerRadius(2)) {
         this.animateWalk(dt);
         // Now move forward (same as before)
@@ -185,7 +189,6 @@ export class Zombie {
       ) {
         this.animateWalk(dt);
       }
-
     }
   }
 
@@ -209,57 +212,54 @@ export class Zombie {
   }
 
   // In your constructor, add something like:
-//   this.attackTimer = 0;
-//   this.damagePerHit = 10;
-//   this.player = playerObject; // or however you store a reference to the player
+  //   this.attackTimer = 0;
+  //   this.damagePerHit = 10;
+  //   this.player = playerObject; // or however you store a reference to the player
 
-animateAttack(dt, inRange) {
-  const cyclePeriod = 0.6;
-  const riseFrac    = 0.7;
-  const fallFrac    = 1 - riseFrac;
-  const maxArmAngle = Math.PI / 3;
+  animateAttack(dt, inRange) {
+    const cyclePeriod = 0.6;
+    const riseFrac = 0.7;
+    const fallFrac = 1 - riseFrac;
+    const maxArmAngle = Math.PI / 3;
 
-  if (inRange) {
-    // ── 1) Advance the timer only when in range ────────────────────
-    const oldTimer = this.attackTimer;
-    this.attackTimer += dt;
+    if (inRange) {
+      // ── 1) Advance the timer only when in range ────────────────────
+      const oldTimer = this.attackTimer;
+      this.attackTimer += dt;
 
-    // ── 2) Wrap‐around check for dealing damage ────────────────────
-    const oldPhase = oldTimer % cyclePeriod;
-    const newPhase = this.attackTimer % cyclePeriod;
-    if (oldPhase > newPhase) {
-      console.log("damage");
-      // e.g. this.player.takeDamage(...)
-    }
+      // ── 2) Wrap‐around check for dealing damage ────────────────────
+      const oldPhase = oldTimer % cyclePeriod;
+      const newPhase = this.attackTimer % cyclePeriod;
+      if (oldPhase > newPhase) {
+        console.log("damage");
+        removePlayerHealth(10);
+      }
 
-    // ── 3) Compute armAngle (“slow up, fast down”) ─────────────────
-    const t       = newPhase;
-    const riseTime = riseFrac * cyclePeriod;
-    const fallTime = fallFrac * cyclePeriod;
+      // ── 3) Compute armAngle (“slow up, fast down”) ─────────────────
+      const t = newPhase;
+      const riseTime = riseFrac * cyclePeriod;
+      const fallTime = fallFrac * cyclePeriod;
 
-    let armAngle;
-    if (t < riseTime) {
-      armAngle = maxArmAngle * (t / riseTime);
+      let armAngle;
+      if (t < riseTime) {
+        armAngle = maxArmAngle * (t / riseTime);
+      } else {
+        const tFall = t - riseTime;
+        armAngle = maxArmAngle * (1 - tFall / fallTime);
+      }
+
+      // ── 4) Apply rotation to arms (children[2] & [3]) ────────────
+      //     (adjust offset so “down” is resting position)
+      this.model.children[2].rotation.x = -armAngle - Math.PI / 2;
+      this.model.children[3].rotation.x = -armAngle - Math.PI / 2;
     } else {
-      const tFall = t - riseTime;
-      armAngle = maxArmAngle * (1 - (tFall / fallTime));
+      // Player is out of range → reset arms & timer
+      this.attackTimer = 0;
+      // Puts arms straight down (adjust if your “idle” pose is different)
+      this.model.children[2].rotation.x = -Math.PI / 2;
+      this.model.children[3].rotation.x = -Math.PI / 2;
     }
-
-    // ── 4) Apply rotation to arms (children[2] & [3]) ────────────
-    //     (adjust offset so “down” is resting position)
-    this.model.children[2].rotation.x = -armAngle - Math.PI / 2;
-    this.model.children[3].rotation.x = -armAngle - Math.PI / 2;
-  } 
-  else {
-    // Player is out of range → reset arms & timer
-    this.attackTimer = 0;
-    // Puts arms straight down (adjust if your “idle” pose is different)
-    this.model.children[2].rotation.x = -Math.PI / 2;
-    this.model.children[3].rotation.x = -Math.PI / 2;
   }
-}
-
-
 
   isInPlayerRadius(radius = 3) {
     const dx = this.position.x - this.playerPosition.x;
@@ -290,4 +290,11 @@ animateAttack(dt, inRange) {
     }
     return this.health;
   }
+}
+
+function removePlayerHealth(amt) {
+  playerHealth -= amt;
+  const healthElement = document.getElementById("health-bar");
+  if (healthElement) healthElement.style.width = playerHealth + "%";
+  console.log(playerHealth);
 }

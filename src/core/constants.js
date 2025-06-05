@@ -13,6 +13,7 @@ export const SPRINT_SPEED = 7.5;
 export const JUMP_SPEED = 10;
 export const GRAVITY = 30;
 export const SUBSTEPS = 2; // higher -> more stablity, less fps
+export const INITIAL_PLAYER_HEALTH = 100;
 
 // gun position
 export const weapAncPosX = 0.4;
