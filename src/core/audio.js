@@ -8,9 +8,9 @@ export function playBackgroundMusic(listener) {
   try {
     audioLoader.load("audio/Vivid_Echo.mp3", function (buffer) {
       sound.setBuffer(buffer);
-      sound.setLoop(true); // true for background music
+      sound.setLoop(true);
       sound.setVolume(1);
-      sound.play(); // optional - play immediately
+      sound.play();
     });
   } catch (error) {
     console.log(error);

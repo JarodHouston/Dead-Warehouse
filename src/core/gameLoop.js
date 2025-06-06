@@ -49,7 +49,7 @@ export function startGameLoop({
   updateBullets,
   walkSound,
   sprintSound,
-  onUpdate = () => {}, // ← NEW: safely defaults to no‑op
+  onUpdate = () => {}, // safely defaults to no‑op
 }) {
   const clock = new THREE.Clock();
   const stats = new Stats();

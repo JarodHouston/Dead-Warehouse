@@ -7,13 +7,6 @@ export async function createScene() {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x110124);
 
-  /* lights */
-  // scene.add(new THREE.AmbientLight(0xffffff, 1));
-  // const sun = new THREE.DirectionalLight(0xffffff, 1);
-  // sun.position.set(100, 200, 100);
-  // sun.castShadow = true;
-  // scene.add(sun);
-
   /* terrain */
   const terrain = new THREE.Mesh(
     new THREE.PlaneGeometry(TERRAIN_SIZE, TERRAIN_SIZE),

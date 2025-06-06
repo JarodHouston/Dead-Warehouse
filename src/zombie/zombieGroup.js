@@ -31,10 +31,7 @@ export class ZombieGroup {
 
   animate(elapsed, dt) {
     if (!this.active) return;
-    // const damage = 0;
     const tileChange = this.updatePlayerTile();
-    // const cell = wallMatrix[this.playerTile.y]?.[this.playerTile.x];
-    // if(tileChange && cell != undefined) console.log(wallMatrix[this.playerTile.x][this.playerTile.y]);
 
     this.zombies.forEach((z) => {
       z.animate(
@@ -42,9 +39,7 @@ export class ZombieGroup {
         dt,
         tileChange && !this.isWall(this.playerTile.x, this.playerTile.y)
       );
-      // if (Math.round((z.attackTime % this.attackRate) * 10)/10 == Math.round((elapsed % this.attackRate))) damage++;
     });
-    // return damage;
   }
   updatePlayerTile() {
     const ret =
@@ -103,13 +98,12 @@ export class ZombieGroup {
 
   _createZombieAt(position, baseZombieModel) {
     const pen = new THREE.Vector3(position.x, 0, position.y);
-    //const pen = new THREE.Vector3(20, 0, 20);
     return new Zombie(
       this,
       pen,
       this.playerPosition,
       this.scene,
       this.baseZombieModel
-    ); // Replace with actual zombie instance creation
+    );
   }
 }

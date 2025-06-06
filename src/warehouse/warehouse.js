@@ -24,7 +24,6 @@ async function getWallMatrix() {
 }
 
 export const wallMatrix = await getWallMatrix();
-// console.log(wallMatrix);
 export const meshMatrix = wallMatrix.map((row) => row.map(() => null));
 
 export const pointLights = [];
@@ -84,14 +83,8 @@ export async function warehouse(scene, floorSize) {
         const lightZ = row * TILE_SIZE + TILE_SIZE / 2;
         light.position.set(lightX, lightY, lightZ);
 
-        // light.castShadow = true;
-        // light.visible = false;
         scene.add(light);
 
-        // const helper = new THREE.PointLightHelper(light, 0.5);
-        // scene.add(helper);
-
-        // Optional: Add visible bulb mesh
         const bulbGeometry = new THREE.SphereGeometry(0.2, 16, 8);
         const bulbMaterial = new THREE.MeshBasicMaterial({ color: 0xffffaa });
         const bulb = new THREE.Mesh(bulbGeometry, bulbMaterial);
@@ -113,13 +106,11 @@ export async function warehouse(scene, floorSize) {
           modelInstance.rotation.y = 0; // Default rotation
           shelfWall = createShelfTile(TILE_SIZE, SHELF_HEIGHT, "horizontal");
           boxWall = createBoxTile(TILE_SIZE, BOX_HEIGHT, "horizontal");
-          // add to mesh matrix, but not here
           boxWall.position.set(
             col * TILE_SIZE,
             SHELF_HEIGHT / 4,
             (row + 1) * TILE_SIZE
           );
-          // Boundary-safe rotation logic (as described above)
           if (
             col > 0 &&
             wallMatrix[row][col - 1] !== undefined &&
@@ -167,7 +158,6 @@ export async function warehouse(scene, floorSize) {
         if (!shelvesModelTemplate) {
           console.log("Error loading shelf");
         } else {
-          // If template is already loaded, just clone it
           const newShelves = shelvesModelTemplate.clone();
           placeShelf(newShelves);
         }
@@ -189,46 +179,11 @@ export async function warehouse(scene, floorSize) {
   const roofGeometry = new THREE.PlaneGeometry(floorSize, floorSize);
   const roofMesh = new THREE.Mesh(roofGeometry, floorMaterial);
 
-  // Flip the plane to face down (so it’s visible from below)
   roofMesh.rotation.x = Math.PI / 2;
 
-  // Set roof height (e.g., same as wall height)
-  roofMesh.position.set(50, WALL_HEIGHT, 50); // Assuming wall height is 15
+  roofMesh.position.set(50, WALL_HEIGHT, 50);
 
   scene.add(roofMesh);
-  // const roofGeometry = new THREE.PlaneGeometry(floorSize, floorSize);
-  // const roofMaterial = new THREE.MeshStandardMaterial({
-  //   color: 0xaaaaaa,
-  //   side: THREE.DoubleSide,
-  // });
-
-  // const roof = new THREE.Mesh(roofGeometry, roofMaterial);
-  // roof.rotation.x = -Math.PI / 2;
-  // roof.position.x = 50;
-  // roof.position.z = 50;
-  // roof.position.y = WALL_HEIGHT;
-
-  // warehouse.add(roof);
-
-  // const roofLoader = new GLTFLoader();
-  // roofLoader.load(
-  //   "textures/concrete/Untitled4.glb",
-  //   (gltf) => {
-  //     const roof = gltf.scene;
-  //     roof.position.set(50, WALL_HEIGHT, 50);
-  //     // roof.rotation.x = -Math.PI / 2;
-
-  //     // const roof = gltf.scene.clone(true);
-  //     // roof.position.set(50, WALL_HEIGHT, 50);
-
-  //     warehouse.add(roof);
-  //     // warehouse.add(roof);
-  //   },
-  //   undefined,
-  //   (error) => {
-  //     console.error("Error loading roof model:", error);
-  //   }
-  // );
 
   return warehouse;
 }

@@ -51,32 +51,10 @@ export function createWallTile(size = 1, height = 15) {
 
   wallTexture.wrapS = THREE.RepeatWrapping;
   wallTexture.wrapT = THREE.RepeatWrapping;
-  wallTexture.repeat.set(0.5, 2); // Adjust to repeat the texture
+  wallTexture.repeat.set(0.5, 2);
 
-  // const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
   const wall = new THREE.Mesh(wallGeometry, wallMaterial);
 
-  // geometry.attributes.uv2 = geometry.attributes.uv;
-
-  // // Random offset in UV space
-  // const offsetX = Math.random();
-  // const offsetY = Math.random();
-
-  // // Apply offset to each face's UVs
-  // const uvs = geometry.attributes.uv;
-  // for (let i = 0; i < uvs.count; i++) {
-  //   uvs.setXY(i, uvs.getX(i) + offsetX, uvs.getY(i) + offsetY);
-  // }
-
-  // const material = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
-  // const material = new THREE.MeshStandardMaterial({
-  //   map: colorMap,
-  //   normalMap: normalMap,
-  //   roughnessMap: roughnessMap,
-  //   aoMap: aoMap,
-  // });
-
-  // const wall = new THREE.Mesh(geometry, material);
   wall.castShadow = true;
   wall.receiveShadow = true;
 

@@ -158,10 +158,6 @@ renderer.domElement.addEventListener("click", (e) => {
   if (!controls.isLocked) controls.lock(); // first click → lock cursor
 });
 
-// window.addEventListener("keydown", (e) => {
-//   if (e.code === "Digit9") deathSystem.killPlayer();
-// });
-
 function requestLock() {
   if (deathSystem.isDead()) return; // don’t re-lock while dead
   controls.lock();

@@ -14,15 +14,6 @@ export function createDeathSystem({
 }) {
   let isPlayerDead = false;
 
-  /* --- UI overlay ------------------------------------------------------- */
-  // const deathScreen          = document.createElement('div');
-  // deathScreen.style.cssText  = `
-  //     position:fixed;inset:0;display:none;align-items:center;justify-content:center;
-  //     font:900 3rem/1 sans-serif;color:#fff;background:rgb(0, 0, 0);z-index:9999;
-  //     text-align:center;user-select:none`;
-  // deathScreen.textContent    = 'You died\nLeft-click to respawn';
-  // document.body.appendChild(deathScreen);
-
   function killPlayer() {
     if (isPlayerDead) return;
     isPlayerDead = true;

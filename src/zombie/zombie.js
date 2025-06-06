@@ -1,12 +1,9 @@
-// Zombie.js
 import * as THREE from "three";
 import {
   ZOMBIE_MOVE_RADIUS,
   INITIAL_PLAYER_HEALTH,
 } from "../core/constants.js";
-import { createZombieModel } from "./model.js"; // modular blocky body
 import { getNextStep } from "./pathfinding.js";
-// Zombie.js
 
 export let playerHealth = INITIAL_PLAYER_HEALTH;
 
@@ -26,7 +23,6 @@ export class Zombie {
     this.playerPosition = playerPosition;
     this.targetTile = null;
     this.targetDirection = null;
-    //this.health = health;
     this.scene = scene;
     this.group = group;
     this.attackTimer = 0;
@@ -61,44 +57,6 @@ export class Zombie {
     this.scene.remove(this.model);
   }
 
-  // animate(updatePath) {
-  //   //Move zombie one step toward target
-  //   if (updatePath && this.isInPlayerRadius(20)) {
-  //     //console.log(this.targetTile);
-  //     this.path = this.ZgetNextStep();
-  //     this.pathidx = 0;
-  //     if (this.path[this.pathidx]) {
-  //       this.targetTile = {x: this.path[this.pathidx].x + 0.5, y: this.path[this.pathidx].y + 0.5};
-  //     }
-  //   }
-
-  //   //this.targetTile = {x: Math.floor(this.playerPosition.x), y: Math.floor(this.playerPosition.z)};
-  //   if (this.targetTile && !this.isInPlayerRadius(2)) { //!this.isInPlayerRadius() && this.targetTile && (this.getTile != this.targetTile)
-
-  //     // 1) compute raw direction from player to targetTile (in XZ-plane)
-  //     const dir = new THREE.Vector3(
-  //       this.targetTile.x - this.position.x,
-  //       0,
-  //       this.targetTile.y - this.position.z
-  //     );
-  //       if (dir.length() < this.speed) {
-  //         this.position.x = this.path[this.pathidx].x + 0.5;
-  //         this.position.z = this.path[this.pathidx].y + 0.5;
-  //         this.pathidx++;
-  //         this.targetTile = {x: this.path[this.pathidx].x + 0.5, y: this.path[this.pathidx].y + 0.5};
-
-  //       } else {
-  //               // 2) normalize to length=1
-  //     dir.normalize();
-
-  //     // 3) scale by speed and add to position
-  //     //    (addScaledVector is shorthand for dir.multiplyScalar(speed) then position.add)
-  //     this.position.addScaledVector(dir, this.speed);
-  //       }
-
-  //   }
-
-  // }
   animate(elapsed, dt, updatePath) {
     if (!this.isInPlayerRadius(ZOMBIE_MOVE_RADIUS)) {
       this.visible = false;
@@ -139,15 +97,15 @@ export class Zombie {
       const desiredYaw = Math.atan2(dir.x, dir.z);
       let currentYaw = this.model.rotation.y;
 
-      // Compute signed delta ∈ [−π, +π]:
+      // Compute signed delta:
       let delta = desiredYaw - currentYaw;
       delta = Math.atan2(Math.sin(delta), Math.cos(delta));
 
       // SMALL‐ANGLE THRESHOLD:
-      const angleEpsilon = 0.5; // ≈1.1°: adjust as needed
+      const angleEpsilon = 0.5;
 
       if (Math.abs(delta) > 0.2) {
-        // Only smoothly rotate if |delta| > ε
+        // smoothly rotate
         const maxTurnSpeed = 0.2; // radians/frame
         const turnAngle =
           Math.abs(delta) > maxTurnSpeed
@@ -156,7 +114,7 @@ export class Zombie {
         currentYaw += turnAngle;
         this.model.rotation.y = currentYaw;
       } else {
-        // If already within ε, snap exactly to desiredYaw and stop turning
+        // snap exactly to desiredYaw and stop turning
         this.model.rotation.y = desiredYaw;
       }
       this.animateAttack(dt, this.isInPlayerRadius(2));
@@ -193,28 +151,16 @@ export class Zombie {
   }
 
   animateWalk(dt) {
-    // 1) Accumulate elapsed time
     this.legAngle += dt;
-
-    // 2) Max swing angle = 30° in radians
     const maxAngle = Math.PI / 6;
+    const frequency = 1;
 
-    // 3) Pick a speed (cycles per second).
-    //    Higher → faster leg swinging.
-    const frequency = 1; // e.g. 4 cycles/sec
-
-    // 4) Compute a sinusoidal angle in [–30°, +30°]
     const angle = maxAngle * Math.sin(this.legAngle * Math.PI * 2 * frequency);
 
-    // // 5) Apply to child 4 and child 5 in opposite phase
+    // Apply to child 4 and child 5 in opposite phase
     this.model.children[4].rotation.x = angle;
     this.model.children[5].rotation.x = -angle;
   }
-
-  // In your constructor, add something like:
-  //   this.attackTimer = 0;
-  //   this.damagePerHit = 10;
-  //   this.player = playerObject; // or however you store a reference to the player
 
   animateAttack(dt, inRange) {
     const cyclePeriod = 0.6;
@@ -253,7 +199,7 @@ export class Zombie {
       this.model.children[2].rotation.x = -armAngle - Math.PI / 2;
       this.model.children[3].rotation.x = -armAngle - Math.PI / 2;
     } else {
-      // Player is out of range → reset arms & timer
+      // Player is out of range, reset arms & timer
       this.attackTimer = 0;
       // Puts arms straight down (adjust if your “idle” pose is different)
       this.model.children[2].rotation.x = -Math.PI / 2;
@@ -277,10 +223,6 @@ export class Zombie {
       0.4,
       0.5
     );
-  }
-
-  resetState() {
-    // Reset target tile, direction, animations, etc.
   }
 
   removeHealth(amt) {
