@@ -123,7 +123,7 @@ function shoot(e) {
 
 const baseZombieModel = createZombieModel();
 const zombieGroup = new ZombieGroup(
-  30,
+  20,
   wallMatrix,
   camera.position,
   scene,

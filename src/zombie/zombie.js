@@ -51,7 +51,7 @@ export class Zombie {
   }
 
   getTile() {
-    return { x: Math.floor(this.position.x), y: Math.floor(this.position.z) };
+    return { x: Math.floor(this.position.x + 0.5), y: Math.floor(this.position.z + 0.5) };
   }
   remove() {
     this.scene.remove(this.model);
@@ -80,8 +80,8 @@ export class Zombie {
       this._recalcCooldown = 0.2;
       if (this.path && this.path[this.pathidx]) {
         this.targetTile = {
-          x: this.path[this.pathidx].x + 0.5,
-          y: this.path[this.pathidx].y + 0.5,
+          x: this.path[this.pathidx].x,
+          y: this.path[this.pathidx].y,
         };
       }
     }
@@ -123,16 +123,16 @@ export class Zombie {
         // Now move forward (same as before)
         if (dir.length() < this.speed * dt) {
           // Snap to the tile, advance path index
-          this.position.x = this.path[this.pathidx].x + 0.5;
-          this.position.z = this.path[this.pathidx].y + 0.5;
+          this.position.x = this.path[this.pathidx].x;
+          this.position.z = this.path[this.pathidx].y;
           this.pathidx++;
           if (!this.path[this.pathidx]) {
             this.pathidx--;
             return;
           }
           this.targetTile = {
-            x: this.path[this.pathidx].x + 0.5,
-            y: this.path[this.pathidx].y + 0.5,
+            x: this.path[this.pathidx].x,
+            y: this.path[this.pathidx].y,
           };
         } else {
           dir.normalize();
@@ -178,7 +178,7 @@ export class Zombie {
       const newPhase = this.attackTimer % cyclePeriod;
       if (oldPhase > newPhase) {
         console.log("damage");
-        removePlayerHealth(10);
+        removePlayerHealth(0);
       }
 
       // ── 3) Compute armAngle (“slow up, fast down”) ─────────────────
@@ -217,8 +217,8 @@ export class Zombie {
     return getNextStep(
       { x: this.position.x, y: this.position.z },
       {
-        x: Math.floor(this.playerPosition.x),
-        y: Math.floor(this.playerPosition.z),
+        x: Math.floor(this.playerPosition.x + 0.5),
+        y: Math.floor(this.playerPosition.z + 0.5),
       },
       0.4,
       0.5

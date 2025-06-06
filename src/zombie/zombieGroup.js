@@ -11,8 +11,8 @@ export class ZombieGroup {
     this.baseZombieModel = baseZombieModel;
     this.active = true;
     this.playerTile = {
-      x: Math.floor(this.playerPosition.x),
-      y: Math.floor(this.playerPosition.z),
+      x: Math.floor(this.playerPosition.x + 0.5),
+      y: Math.floor(this.playerPosition.z + 0.5),
     };
     this.attackRate = 1;
     for (let i = 0; i < numZombies; i++) {
@@ -43,10 +43,11 @@ export class ZombieGroup {
   }
   updatePlayerTile() {
     const ret =
-      Math.floor(this.playerPosition.x) != this.playerTile.x ||
-      Math.floor(this.playerPosition.z) != this.playerTile.y;
-    this.playerTile.x = Math.floor(this.playerPosition.x);
-    this.playerTile.y = Math.floor(this.playerPosition.z);
+      Math.floor(this.playerPosition.x + 0.5) != this.playerTile.x ||
+      Math.floor(this.playerPosition.z + 0.5) != this.playerTile.y;
+    this.playerTile.x = Math.floor(this.playerPosition.x + 0.5);
+    this.playerTile.y = Math.floor(this.playerPosition.z + 0.5);
+    
     return ret;
   }
   isTooCloseToPlayer(x, y) {
