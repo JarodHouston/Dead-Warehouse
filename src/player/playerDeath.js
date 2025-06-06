@@ -29,7 +29,7 @@ export function createDeathSystem({
     document.getElementById("death-screen").style.display = "block";
     document.getElementById("end-score").textContent = `Score: ${score}`;
     document.getElementById("end-kills").textContent = `Kills: ${kills}`;
-    document.getElementById("crosshaird").style.display = "none";
+    document.getElementById("crosshair").style.display = "none";
     // deathScreen.style.display = 'flex';
     zombieGroup.setActive(false);
   }

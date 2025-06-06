@@ -9,7 +9,6 @@ export function handleShot(camera, raycaster, zombieGroup) {
   );
   raycaster.set(camera.position, dir);
 
-  // ONLY CHECKS ZOMBIE OBJECTS (should do raycast considering wall objects too)
   const intersects = raycaster.intersectObjects(
     zombieGroup.zombies.map((z) => z.model),
     true
@@ -19,7 +18,6 @@ export function handleShot(camera, raycaster, zombieGroup) {
 
   if (intersects.length > 0) {
     const hit = intersects[0].object;
-    const part = hit.userData.part;
     const zombie = hit.userData.zombie;
 
     console.log("Hit zombie:", hit.name || hit);
@@ -27,11 +25,9 @@ export function handleShot(camera, raycaster, zombieGroup) {
     let currHealth = null;
 
     if (hit.name === "head") {
-      console.log("HEADSHOT BABYYYY");
       currHealth = zombie.removeHealth(100);
       score += 100;
     } else if (hit.name === "torso") {
-      console.log("ok body shot!");
       currHealth = zombie.removeHealth(50);
       score += 35;
     } else {
