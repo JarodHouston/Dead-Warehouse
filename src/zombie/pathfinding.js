@@ -2,9 +2,9 @@ import { wallMatrix } from "../warehouse/warehouse";
 import { meshMatrix } from "../warehouse/warehouse";
 import * as THREE from "three";
 
-// 1. Precompute the neighborhood
+// 1. Precompute the = neighborhood (radius = 3) â†’ 48 offsets
 const NEIGHBORS_RADIUS_3_SQUARE = [];
-const rad = 1;
+const rad = 3;
 for (let dx = -rad; dx <= rad; dx++) {
   for (let dy = -rad; dy <= rad; dy++) {
     if (dx === 0 && dy === 0) continue;
@@ -17,7 +17,7 @@ function dist(a, b) {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
-// 4. Checks collisionsfree of a circle from `fromPos` to `toPos`
+// 4. Checks collisionâ€free â€œsweepâ€ of a circle from `fromPos` â†’ `toPos`
 function isPathClear(fP, tP, r) {
   const fromPos = new THREE.Vector3(fP.x, 0.5, fP.y);
   const toPos = new THREE.Vector3(tP.x, 0.5, tP.y);
@@ -35,7 +35,7 @@ function isPathClear(fP, tP, r) {
     fromPos.clone().addScaledVector(perp, -r),
   ];
 
-  // find all wall meshes in a tile square around the *from* tile
+  // find all wall meshes in a 3Ã—3â€tile square around the *from* tile
   const cx = Math.floor(fP.x);
   const cy = Math.floor(fP.y);
   const localMeshes = [];
@@ -67,7 +67,7 @@ function isPathClear(fP, tP, r) {
 //    position: {x: float, y: float}
 //    targetTile: {x: int, y: int}
 //    wallMatrix: 2D array of 0/1
-export function getNextStep(position, targetTile, radius = 2) {
+export function getNextStep(position, targetTile, radius = 0.5) {
   const startTile = {
     x: Math.floor(position.x),
     y: Math.floor(position.y),
@@ -106,7 +106,7 @@ export function getNextStep(position, targetTile, radius = 2) {
 
     const currKey = `${current.x},${current.y}`;
 
-    // 5.b. If reached goal, reconstruct full tile path, return just the first step
+    // 5.b. If reached goal, reconstruct full tile path â†’ return just the first step
     if (currKey === goalKey) {
       const pathTiles = [];
       let key = goalKey;
@@ -144,7 +144,7 @@ export function getNextStep(position, targetTile, radius = 2) {
           : { x: current.x + 0.5, y: current.y + 0.5 };
       const toPos = { x: neighborTile.x + 0.5, y: neighborTile.y + 0.5 };
 
-      // Collisionsweep test
+      // Collisionâ€sweep test
       if (!isPathClear(fromPos, toPos, radius)) {
         continue;
       }

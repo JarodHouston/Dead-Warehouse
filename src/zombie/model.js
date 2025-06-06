@@ -388,10 +388,8 @@ export function createZombieModel() {
   const leftLeg = createLeftLegMesh();
   const rightLeg = createRightLegMesh();
 
-  // Keep index order: [0=head, 1=torso, 2=leftArm, 3=rightArm, 4=leftLeg, 5=rightLeg]
   character.add(head, torso, leftArm, rightArm, leftLeg, rightLeg);
 
-  // Scale down uniformly
   character.scale.set(0.5, 0.5, 0.5);
 
   character.traverse((child) => {
