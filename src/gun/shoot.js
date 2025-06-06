@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
-let score = 0;
-let kills = 0;
+export let score = 0;
+export let kills = 0;
 
 export function handleShot(camera, raycaster, zombieGroup) {
   const dir = new THREE.Vector3().copy(

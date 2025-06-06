@@ -1,3 +1,5 @@
+import { score, kills } from "../gun/shoot";
+
 // playerDeath.js
 export function createDeathSystem({
   camera,
@@ -13,14 +15,13 @@ export function createDeathSystem({
   let isPlayerDead = false;
 
   /* --- UI overlay ------------------------------------------------------- */
-  const deathScreen          = document.createElement('div');
-  deathScreen.style.cssText  = `
-      position:fixed;inset:0;display:none;align-items:center;justify-content:center;
-      font:900 3rem/1 sans-serif;color:#fff;background:rgb(0, 0, 0);z-index:9999;
-      text-align:center;user-select:none`;
-  deathScreen.textContent    = 'You died\nLeft-click to respawn';
-  document.body.appendChild(deathScreen);
-
+  // const deathScreen          = document.createElement('div');
+  // deathScreen.style.cssText  = `
+  //     position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+  //     font:900 3rem/1 sans-serif;color:#fff;background:rgb(0, 0, 0);z-index:9999;
+  //     text-align:center;user-select:none`;
+  // deathScreen.textContent    = 'You died\nLeft-click to respawn';
+  // document.body.appendChild(deathScreen);
 
   function killPlayer() {
     if (isPlayerDead) return;
@@ -34,7 +35,11 @@ export function createDeathSystem({
     walkSound.stop();
     sprintSound.stop();
 
-    deathScreen.style.display = 'flex';
+    document.getElementById("death-screen").style.display = "block";
+    document.getElementById("end-score").textContent = `Score: ${score}`;
+    document.getElementById("end-kills").textContent = `Kills: ${kills}`;
+    document.getElementById("crosshaird").style.display = "none";
+    // deathScreen.style.display = 'flex';
     zombieGroup.setActive(false);
   }
 
@@ -44,14 +49,14 @@ export function createDeathSystem({
 
     camera.position.copy(spawn);
     playerCollider.start.set(spawn.x, PLAYER_RADIUS, spawn.z);
-    playerCollider.end  .set(spawn.x, PLAYER_HEIGHT, spawn.z);
+    playerCollider.end.set(spawn.x, PLAYER_HEIGHT, spawn.z);
 
     controls.connect();
     controls.lock();
     //canvas.addEventListener('click', requestLock);
     controls.velocity?.set(0, 0, 0);
 
-    deathScreen.style.display = 'none';
+    deathScreen.style.display = "none";
     zombieGroup.setActive(true);
   }
 
